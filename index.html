@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spades Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; color: #e94560; font-size: 1.8rem; }
+    .teams { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+    .team { background: #16213e; border-radius: 12px; padding: 20px; min-width: 280px; flex: 1; max-width: 400px; }
+    .team h2 { margin-bottom: 12px; font-size: 1.2rem; }
+    .team-1 h2 { color: #0f3460; background: #e94560; padding: 8px 16px; border-radius: 8px; text-align: center; }
+    .team-2 h2 { color: #1a1a2e; background: #00b4d8; padding: 8px 16px; border-radius: 8px; text-align: center; }
+    .score-display { text-align: center; font-size: 2.5rem; font-weight: bold; margin: 12px 0; }
+    .team-1 .score-display { color: #e94560; }
+    .team-2 .score-display { color: #00b4d8; }
+    .bags { text-align: center; font-size: 0.9rem; color: #888; margin-bottom: 12px; }
+    label { display: block; margin: 8px 0 4px; font-size: 0.85rem; color: #aaa; }
+    input, .team-name-input { width: 100%; padding: 8px 12px; border: 1px solid #333; border-radius: 6px; background: #0f3460; color: #e0e0e0; font-size: 1rem; }
+    input:focus { outline: none; border-color: #e94560; }
+    .bid-row { display: flex; gap: 10px; }
+    .bid-row > div { flex: 1; }
+    .actions { display: flex; gap: 10px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+    button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: opacity 0.2s; }
+    button:hover { opacity: 0.85; }
+    .btn-score { background: #e94560; color: white; }
+    .btn-undo { background: #333; color: #ccc; }
+    .btn-reset { background: #4a0e0e; color: #e94560; }
+    .btn-nil { background: #0f3460; color: #00b4d8; font-size: 0.8rem; padding: 6px 12px; }
+    .history { background: #16213e; border-radius: 12px; padding: 16px; max-width: 820px; margin: 0 auto; }
+    .history h3 { margin-bottom: 10px; color: #888; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { color: #888; text-align: left; padding: 6px 8px; border-bottom: 1px solid #333; }
+    td { padding: 6px 8px; border-bottom: 1px solid #222; }
+    .nil-label { font-size: 0.7rem; color: #00b4d8; margin-left: 4px; }
+    .winner { text-align: center; padding: 12px; background: #e94560; color: white; border-radius: 8px; font-size: 1.2rem; font-weight: bold; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Spades Tracker</h1>
+  <div id="winner"></div>
+
+  <div class="teams">
+    <div class="team team-1">
+      <h2 contenteditable="true" id="name1">Team 1</h2>
+      <div class="score-display" id="score1">0</div>
+      <div class="bags" id="bags1">Bags: 0</div>
+      <div class="bid-row">
+        <div>
+          <label>Bid</label>
+          <input type="number" id="bid1" min="0" max="13" value="0">
+        </div>
+        <div>
+          <label>Tricks Won</label>
+          <input type="number" id="tricks1" min="0" max="13" value="0">
+        </div>
+      </div>
+      <div style="margin-top:8px; text-align:center;">
+        <button class="btn-nil" onclick="toggleNil(1)">Nil Bid: <span id="nil1">Off</span></button>
+        <button class="btn-nil" onclick="toggleBlindNil(1)">Blind Nil: <span id="bnil1">Off</span></button>
+      </div>
+    </div>
+
+    <div class="team team-2">
+      <h2 contenteditable="true" id="name2">Team 2</h2>
+      <div class="score-display" id="score2">0</div>
+      <div class="bags" id="bags2">Bags: 0</div>
+      <div class="bid-row">
+        <div>
+          <label>Bid</label>
+          <input type="number" id="bid2" min="0" max="13" value="0">
+        </div>
+        <div>
+          <label>Tricks Won</label>
+          <input type="number" id="tricks2" min="0" max="13" value="0">
+        </div>
+      </div>
+      <div style="margin-top:8px; text-align:center;">
+        <button class="btn-nil" onclick="toggleNil(2)">Nil Bid: <span id="nil2">Off</span></button>
+        <button class="btn-nil" onclick="toggleBlindNil(2)">Blind Nil: <span id="bnil2">Off</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-score" onclick="scoreRound()">Score Round</button>
+    <button class="btn-undo" onclick="undoRound()">Undo</button>
+    <button class="btn-reset" onclick="resetGame()">New Game</button>
+  </div>
+
+  <div class="history">
+    <h3>Round History</h3>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Team 1 Bid</th><th>Team 1 Tricks</th><th>Team 1 Pts</th><th>Team 2 Bid</th><th>Team 2 Tricks</th><th>Team 2 Pts</th></tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    let state = { scores: [0, 0], bags: [0, 0], rounds: [], nils: [false, false], blindNils: [false, false] };
+    const WINNING_SCORE = 500;
+
+    function toggleNil(team) {
+      const i = team - 1;
+      state.nils[i] = !state.nils[i];
+      if (state.nils[i]) state.blindNils[i] = false;
+      updateNilDisplay();
+    }
+
+    function toggleBlindNil(team) {
+      const i = team - 1;
+      state.blindNils[i] = !state.blindNils[i];
+      if (state.blindNils[i]) state.nils[i] = false;
+      updateNilDisplay();
+    }
+
+    function updateNilDisplay() {
+      document.getElementById('nil1').textContent = state.nils[0] ? 'On' : 'Off';
+      document.getElementById('nil2').textContent = state.nils[1] ? 'On' : 'Off';
+      document.getElementById('bnil1').textContent = state.blindNils[0] ? 'On' : 'Off';
+      document.getElementById('bnil2').textContent = state.blindNils[1] ? 'On' : 'Off';
+    }
+
+    function calcRound(bid, tricks, isNil, isBlindNil) {
+      let points = 0;
+      let newBags = 0;
+
+      if (isNil || isBlindNil) {
+        const nilValue = isBlindNil ? 200 : 100;
+        if (tricks === 0) {
+          points = nilValue;
+        } else {
+          points = -nilValue;
+          newBags = tricks;
+        }
+      } else {
+        if (tricks >= bid) {
+          points = bid * 10;
+          newBags = tricks - bid;
+          points += newBags;
+        } else {
+          points = -bid * 10;
+        }
+      }
+
+      return { points, newBags };
+    }
+
+    function scoreRound() {
+      const bids = [parseInt(document.getElementById('bid1').value) || 0, parseInt(document.getElementById('bid2').value) || 0];
+      const tricks = [parseInt(document.getElementById('tricks1').value) || 0, parseInt(document.getElementById('tricks2').value) || 0];
+      const nils = [...state.nils];
+      const blindNils = [...state.blindNils];
+
+      const results = [0, 1].map(i => calcRound(bids[i], tricks[i], nils[i], blindNils[i]));
+
+      const round = { bids: [...bids], tricks: [...tricks], nils: [...nils], blindNils: [...blindNils], points: results.map(r => r.points), prevScores: [...state.scores], prevBags: [...state.bags] };
+
+      for (let i = 0; i < 2; i++) {
+        state.bags[i] += results[i].newBags;
+        if (state.bags[i] >= 10) {
+          state.scores[i] -= 100;
+          state.bags[i] -= 10;
+        }
+        state.scores[i] += results[i].points;
+      }
+
+      state.rounds.push(round);
+      state.nils = [false, false];
+      state.blindNils = [false, false];
+
+      document.getElementById('bid1').value = 0;
+      document.getElementById('bid2').value = 0;
+      document.getElementById('tricks1').value = 0;
+      document.getElementById('tricks2').value = 0;
+      updateNilDisplay();
+      render();
+    }
+
+    function undoRound() {
+      if (state.rounds.length === 0) return;
+      const last = state.rounds.pop();
+      state.scores = [...last.prevScores];
+      state.bags = [...last.prevBags];
+      render();
+    }
+
+    function resetGame() {
+      if (state.rounds.length > 0 && !confirm('Start a new game?')) return;
+      state = { scores: [0, 0], bags: [0, 0], rounds: [], nils: [false, false], blindNils: [false, false] };
+      updateNilDisplay();
+      render();
+    }
+
+    function render() {
+      document.getElementById('score1').textContent = state.scores[0];
+      document.getElementById('score2').textContent = state.scores[1];
+      document.getElementById('bags1').textContent = 'Bags: ' + state.bags[0];
+      document.getElementById('bags2').textContent = 'Bags: ' + state.bags[1];
+
+      const tbody = document.getElementById('historyBody');
+      tbody.innerHTML = '';
+      state.rounds.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        const nilTag = (i) => r.nils[i] ? '<span class="nil-label">NIL</span>' : r.blindNils[i] ? '<span class="nil-label">BLIND</span>' : '';
+        tr.innerHTML = `<td>${idx + 1}</td><td>${r.bids[0]}${nilTag(0)}</td><td>${r.tricks[0]}</td><td>${r.points[0] >= 0 ? '+' : ''}${r.points[0]}</td><td>${r.bids[1]}${nilTag(1)}</td><td>${r.tricks[1]}</td><td>${r.points[1] >= 0 ? '+' : ''}${r.points[1]}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      const winnerEl = document.getElementById('winner');
+      const name1 = document.getElementById('name1').textContent;
+      const name2 = document.getElementById('name2').textContent;
+      if (state.scores[0] >= WINNING_SCORE && state.scores[0] > state.scores[1]) {
+        winnerEl.className = 'winner';
+        winnerEl.textContent = name1 + ' wins!';
+      } else if (state.scores[1] >= WINNING_SCORE && state.scores[1] > state.scores[0]) {
+        winnerEl.className = 'winner';
+        winnerEl.textContent = name2 + ' wins!';
+      } else {
+        winnerEl.className = '';
+        winnerEl.textContent = '';
+      }
+    }
+  </script>
+</body>
+</html>
