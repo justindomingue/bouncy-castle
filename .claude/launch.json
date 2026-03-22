@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "spades",
+      "name": "spades-room",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8000", "--directory", "spades"],
-      "port": 8000
+      "runtimeArgs": ["-m", "http.server", "8081", "-d", "spades-room"],
+      "port": 8081
     }
   ]
 }

@@ -1,0 +1,25 @@
+{
+  "name": "Spades Live Room",
+  "short_name": "Spades Live",
+  "description": "Mobile-first score tracker for Spades card game with nil, blind nil, and bag penalty support.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d4f3c",
+  "theme_color": "#0d4f3c",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

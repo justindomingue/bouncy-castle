@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="%230d4f3c"/><text x="50" y="74" font-size="68" text-anchor="middle" fill="%23c9a227">♠</text></svg>'>
-<title>Spades Score Tracker</title>
+<title>Spades Live Room</title>
 <style>
   /* ───────── CARD ROOM PALETTE ───────── */
   :root {
@@ -585,6 +585,63 @@
     font-size: 8px; letter-spacing: 10px; margin: 4px 0;
     user-select: none;
   }
+  /* ───────── P2P CONNECTION BAR ───────── */
+  .p2p-bar {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 8px 0; margin-bottom: 4px;
+    min-height: 40px; flex-wrap: wrap;
+  }
+  .p2p-state { display: flex; align-items: center; gap: 8px; }
+  .p2p-state.hidden { display: none; }
+  .btn-p2p {
+    padding: 6px 14px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    background: transparent; color: var(--gold);
+    border: 1px solid rgba(201,162,39,0.35); border-radius: 6px;
+    font-family: inherit;
+  }
+  .btn-p2p:active { background: rgba(201,162,39,0.08); }
+  .btn-p2p-sm {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: transparent; border: 1px solid rgba(201,162,39,0.25);
+    color: var(--gold); font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit; line-height: 1;
+  }
+  .p2p-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--cream); opacity: 0.7;
+  }
+  .p2p-code {
+    font-family: Georgia, serif; font-size: 20px; font-weight: 700;
+    color: var(--gold); letter-spacing: 0.15em;
+    user-select: all; -webkit-user-select: all;
+  }
+  .p2p-code-sm {
+    font-family: Georgia, serif; font-size: 12px;
+    color: var(--gold); opacity: 0.6; letter-spacing: 0.1em;
+  }
+  .p2p-input {
+    width: 60px; padding: 6px 10px; font-size: 18px;
+    font-family: Georgia, serif; letter-spacing: 0.2em;
+    text-align: center;
+    background: rgba(0,0,0,0.2); color: var(--cream);
+    border: 1px solid rgba(201,162,39,0.3); border-radius: 6px;
+  }
+  .p2p-input:focus { outline: none; border-color: var(--gold); }
+  .p2p-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #2d6a4f;
+    box-shadow: 0 0 6px rgba(45,106,79,0.6);
+    animation: p2p-pulse 2s ease-in-out infinite;
+  }
+  @keyframes p2p-pulse {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+  }
+  .p2p-status {
+    font-size: 10px; color: var(--cream); opacity: 0.5;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
 </style>
 </head>
 <body>
@@ -598,6 +655,31 @@
 
 <main>
   <div id="banner"></div>
+
+  <!-- P2P Connection Bar -->
+  <div id="p2pBar" class="p2p-bar">
+    <div id="p2pOffline" class="p2p-state">
+      <button class="btn-p2p" id="p2pCreateBtn">Host Game</button>
+      <button class="btn-p2p" id="p2pJoinBtn">Join Game</button>
+    </div>
+    <div id="p2pHosting" class="p2p-state hidden">
+      <span class="p2p-label">Code:</span>
+      <span class="p2p-code" id="p2pCode"></span>
+      <span class="p2p-status" id="p2pHostStatus">Waiting…</span>
+      <button class="btn-p2p-sm" id="p2pDisconnectBtn">✕</button>
+    </div>
+    <div id="p2pJoining" class="p2p-state hidden">
+      <input type="text" id="p2pInput" class="p2p-input" placeholder="Code" maxlength="2" inputmode="numeric" pattern="[0-9]*">
+      <button class="btn-p2p" id="p2pConnectBtn">Go</button>
+      <button class="btn-p2p-sm" id="p2pCancelBtn">✕</button>
+    </div>
+    <div id="p2pConnected" class="p2p-state hidden">
+      <span class="p2p-dot"></span>
+      <span class="p2p-label">Live</span>
+      <span class="p2p-code-sm" id="p2pCodeDisplay"></span>
+      <button class="btn-p2p-sm" id="p2pLeaveBtn">✕</button>
+    </div>
+  </div>
 
   <!-- Two playing cards on the felt -->
   <div class="table">
@@ -805,12 +887,17 @@
   </div>
 </div>
 
+<script type="module">
+import {joinRoom} from 'https://esm.sh/trystero/nostr';
+window.trystero = {joinRoom};
+window.dispatchEvent(new Event('trystero-ready'));
+</script>
 <script>
 (() => {
   'use strict';
 
-  const STORAGE_KEY = 'spades-tracker-v1';
-  const THEME_KEY = 'spades-tracker-theme';
+  const STORAGE_KEY = 'spades-room-v1';
+  const THEME_KEY = 'spades-room-theme';
 
   // ---------- State ----------
   let state;
@@ -846,6 +933,7 @@
   }
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    broadcastState();
   }
 
   // ---------- Scoring ----------
@@ -1358,7 +1446,145 @@ modal.classList.remove('hidden'));
     });
   }
 
-  window.__spades = { scoreTeam, scoreContract, applyBagPenalty, computeTotals, state: () => state };
+  // ---------- P2P Multiplayer ----------
+  const P2P_ROOM_KEY = 'spades-room-p2p';
+  const P2P_APP_ID = 'bouncy-castle-spades-v1';
+  const p2p = { room: null, sendState: null, roomCode: null, role: null, connected: false, peerId: null };
+  let receiving = false;
+
+  function broadcastState() {
+    if (!receiving && p2p.sendState) {
+      p2p.sendState({ ...state, _ts: Date.now() });
+    }
+  }
+
+  function onRemoteState(data) {
+    receiving = true;
+    const e = data.entry || {};
+    state.names = data.names || state.names;
+    state.target = data.target ?? state.target;
+    state.lose = data.lose ?? state.lose;
+    state.rounds = data.rounds || state.rounds;
+    state.entry = { ...defaultEntry(), ...e };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    render();
+    receiving = false;
+  }
+
+  function updateConnectionUI() {
+    const ids = ['p2pOffline', 'p2pHosting', 'p2pJoining', 'p2pConnected'];
+    ids.forEach(id => $(id).classList.add('hidden'));
+    if (!p2p.room) {
+      $('p2pOffline').classList.remove('hidden');
+    } else if (p2p.connected) {
+      $('p2pConnected').classList.remove('hidden');
+      $('p2pCodeDisplay').textContent = p2p.roomCode;
+    } else if (p2p.role === 'host') {
+      $('p2pHosting').classList.remove('hidden');
+      $('p2pCode').textContent = p2p.roomCode;
+      $('p2pHostStatus').textContent = 'Waiting…';
+    }
+  }
+
+  function connectToRoom(code, role) {
+    if (p2p.room) { try { p2p.room.leave(); } catch {} }
+    if (!window.trystero) return;
+
+    const room = window.trystero.joinRoom({ appId: P2P_APP_ID }, 'spades-' + code);
+    p2p.room = room;
+    p2p.roomCode = code;
+    p2p.role = role;
+
+    const [sendState, onState] = room.makeAction('state');
+    p2p.sendState = sendState;
+    onState((data) => onRemoteState(data));
+
+    room.onPeerJoin((peerId) => {
+      p2p.connected = true;
+      p2p.peerId = peerId;
+      updateConnectionUI();
+      if (role === 'host') {
+        sendState({ ...state, _ts: Date.now() });
+      }
+    });
+
+    room.onPeerLeave(() => {
+      p2p.connected = false;
+      p2p.peerId = null;
+      updateConnectionUI();
+    });
+
+    updateConnectionUI();
+  }
+
+  function p2pDisconnect() {
+    if (p2p.room) { try { p2p.room.leave(); } catch {} }
+    p2p.room = null;
+    p2p.sendState = null;
+    p2p.roomCode = null;
+    p2p.role = null;
+    p2p.connected = false;
+    p2p.peerId = null;
+    try { localStorage.removeItem(P2P_ROOM_KEY); } catch {}
+    updateConnectionUI();
+  }
+
+  function initP2P() {
+    $('p2pCreateBtn').addEventListener('click', () => {
+      const code = String(Math.floor(10 + Math.random() * 90));
+      connectToRoom(code, 'host');
+      try { localStorage.setItem(P2P_ROOM_KEY, code); } catch {}
+    });
+
+    $('p2pJoinBtn').addEventListener('click', () => {
+      $('p2pOffline').classList.add('hidden');
+      $('p2pJoining').classList.remove('hidden');
+      $('p2pInput').value = '';
+      $('p2pInput').focus();
+    });
+
+    $('p2pConnectBtn').addEventListener('click', () => {
+      const code = $('p2pInput').value.trim();
+      if (code.length !== 2 || !/^\d+$/.test(code)) return;
+      $('p2pJoining').classList.add('hidden');
+      connectToRoom(code, 'guest');
+      try { localStorage.setItem(P2P_ROOM_KEY, code); } catch {}
+    });
+
+    $('p2pInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') $('p2pConnectBtn').click();
+    });
+
+    $('p2pCancelBtn').addEventListener('click', () => {
+      $('p2pJoining').classList.add('hidden');
+      $('p2pOffline').classList.remove('hidden');
+    });
+
+    $('p2pDisconnectBtn').addEventListener('click', p2pDisconnect);
+    $('p2pLeaveBtn').addEventListener('click', p2pDisconnect);
+
+    // Reconnect to previous room on load
+    const savedRoom = localStorage.getItem(P2P_ROOM_KEY);
+    if (savedRoom) {
+      connectToRoom(savedRoom, 'guest');
+      setTimeout(() => {
+        if (p2p.room && !p2p.connected) p2pDisconnect();
+      }, 15000);
+    }
+  }
+
+  // Wait for Trystero module to load (async), or hide bar if it fails
+  if (window.trystero) {
+    initP2P();
+  } else {
+    window.addEventListener('trystero-ready', () => initP2P(), { once: true });
+    // If Trystero hasn't loaded after 10s, hide the bar
+    setTimeout(() => {
+      if (!window.trystero) $('p2pBar').style.display = 'none';
+    }, 10000);
+  }
+
+  window.__spades = { scoreTeam, scoreContract, applyBagPenalty, computeTotals, state: () => state, p2p };
 })();
 </script>
 </body>
