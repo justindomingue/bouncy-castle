@@ -1,0 +1,1228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d4f3c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="%230d4f3c"/><text x="50" y="74" font-size="68" text-anchor="middle" fill="%23c9a227">♠</text></svg>'>
+<title>Spades Score Tracker</title>
+<style>
+  /* ───────── CARD ROOM PALETTE ───────── */
+  :root {
+    --felt: #0d4f3c;
+    --felt-deep: #0a3e2f;
+    --felt-vignette: #072a20;
+    --cream: #faf6ed;
+    --cream-edge: #ede5d3;
+    --ink: #1a1612;
+    --ink-soft: #4a4238;
+    --gold: #c9a227;
+    --gold-bright: #e0b935;
+    --gold-dim: #9c7e1e;
+    --set: #8b2635;
+    --make: #2d6a4f;
+    --bag-warn: #b45309;
+    --bag-danger: #8b2635;
+    --card-radius: 10px;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.15);
+    --card-shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+    color-scheme: light;
+  }
+  :root.dark {
+    --felt: #0a2e23;
+    --felt-deep: #06211a;
+    --felt-vignette: #031410;
+    --cream: #f5f0e1;
+    --cream-edge: #e3d9c0;
+    --gold: #d4af37;
+    --gold-bright: #f0c94a;
+    --card-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 6px 18px rgba(0,0,0,0.35);
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not(.light):not(.dark) {
+      --felt: #0a2e23;
+      --felt-deep: #06211a;
+      --felt-vignette: #031410;
+      --cream: #f5f0e1;
+      --cream-edge: #e3d9c0;
+      --gold: #d4af37;
+      --gold-bright: #f0c94a;
+      --card-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 6px 18px rgba(0,0,0,0.35);
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--felt);
+    background-image:
+      radial-gradient(ellipse 120% 80% at 50% 0%, transparent 30%, var(--felt-vignette) 100%);
+    background-attachment: fixed;
+    color: var(--cream);
+    line-height: 1.4;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing: antialiased;
+    touch-action: manipulation;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  button { touch-action: manipulation; font-family: inherit; cursor: pointer; }
+
+  /* ───────── HEADER ───────── */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px;
+    padding-top: calc(14px + env(safe-area-inset-top, 0));
+    background: linear-gradient(to bottom, var(--felt-deep) 0%, transparent 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand .spade-glyph {
+    font-size: 32px; line-height: 1;
+    color: var(--gold);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.15), 0 -1px 1px rgba(0,0,0,0.4);
+    display: inline-block;
+    transition: transform 0.6s cubic-bezier(0.34, 1.3, 0.64, 1);
+    cursor: pointer;
+    user-select: none; -webkit-user-select: none;
+  }
+  .brand .spade-glyph.spin { transform: rotate(360deg); }
+  .brand h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 20px; font-weight: 600; margin: 0;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--cream);
+  }
+  .theme-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: transparent; border: 1px solid rgba(201,162,39,0.35);
+    color: var(--gold); font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 120ms;
+  }
+  .theme-btn:active { transform: scale(0.92); background: rgba(201,162,39,0.1); }
+
+  main { position: relative; z-index: 1; padding: 8px 16px 20px; max-width: 540px; margin: 0 auto; }
+
+  /* ───────── WINNER TROPHY ───────── */
+  .trophy {
+    margin: 0 0 16px;
+    padding: 18px 20px;
+    background: var(--cream);
+    border: 2px solid var(--gold);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow), inset 0 0 0 4px var(--cream), inset 0 0 0 5px var(--gold-dim);
+    text-align: center;
+    animation: trophyIn 420ms cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+  .trophy .plaque {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase;
+    color: var(--gold-dim); margin-bottom: 4px;
+  }
+  .trophy .name {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 26px; font-weight: 700; letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+  .trophy .reason {
+    font-size: 12px; color: var(--ink-soft); margin-top: 4px;
+  }
+  @keyframes trophyIn {
+    from { transform: translateY(-8px) scale(0.96); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  /* ───────── SCOREBOARD ───────── */
+  .table {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;
+  }
+  .score-card {
+    position: relative;
+    background: var(--cream);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: 14px 12px 16px;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 150px;
+  }
+  .score-card::before {
+    content: "";
+    position: absolute; inset: 6px;
+    border: 1px solid var(--gold-dim);
+    border-radius: calc(var(--card-radius) - 4px);
+    opacity: 0.35; pointer-events: none;
+  }
+  .score-card::after {
+    content: "♠";
+    position: absolute; top: 10px; left: 12px;
+    font-size: 14px; color: var(--gold); opacity: 0.55;
+    font-family: Georgia, serif;
+  }
+  .team-name {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--ink-soft);
+    background: transparent; border: none;
+    text-align: center; width: 100%;
+    padding: 2px 20px; margin-bottom: 6px;
+    border-radius: 4px;
+  }
+  .team-name:focus {
+    outline: none; background: rgba(201,162,39,0.08);
+    box-shadow: inset 0 0 0 1px var(--gold-dim);
+  }
+  .team-score {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 60px; font-weight: 700; line-height: 0.9;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin: 4px 0 8px;
+    transition: color 200ms;
+  }
+  .team-score.neg { color: var(--set); }
+  .team-score.flip { animation: scoreFlip 280ms ease-out; }
+  @keyframes scoreFlip {
+    0% { transform: translateY(6px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  .bag-pips {
+    display: flex; gap: 2px; justify-content: center; align-items: center;
+    margin-top: auto;
+  }
+  .bag-pips .pip {
+    width: 9px; height: 11px;
+    font-size: 10px; line-height: 11px;
+    font-family: Georgia, serif;
+    text-align: center;
+    color: rgba(26,22,18,0.12);
+    transition: color 150ms, transform 150ms;
+  }
+  .bag-pips .pip.on { color: var(--ink-soft); }
+  .bag-pips .pip.on.pop { animation: pipPop 280ms cubic-bezier(0.34, 1.6, 0.64, 1); }
+  @keyframes pipPop {
+    0% { transform: scale(0.4); } 60% { transform: scale(1.25); } 100% { transform: scale(1); }
+  }
+  .bag-label {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.16em;
+    color: var(--ink-soft); opacity: 0.6; margin-top: 4px; text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .bag-label.warn  { color: var(--bag-warn); opacity: 0.9; font-weight: 700; }
+  .bag-label.danger{ color: var(--bag-danger); opacity: 1; font-weight: 700; }
+
+  .sr-bags { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  /* ───────── SCORE PAD ───────── */
+  .pad {
+    background: var(--cream);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: 16px 14px 18px;
+    margin-bottom: 18px;
+    position: relative;
+  }
+  .pad::before {
+    content: "";
+    position: absolute; inset: 6px;
+    border: 1px solid var(--gold-dim);
+    border-radius: calc(var(--card-radius) - 4px);
+    opacity: 0.28; pointer-events: none;
+  }
+  .pad-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 14px; padding: 0 2px;
+  }
+  .hand-no {
+    font-family: Georgia, serif;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--gold-dim); font-weight: 700;
+  }
+  .tricks-sum {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--ink-soft); opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+  }
+  .tricks-sum.bad { color: var(--set); opacity: 1; font-weight: 700; }
+
+  .pad-grid {
+    display: grid; grid-template-columns: 1fr 1px 1fr;
+    gap: 0; align-items: start;
+  }
+  .pad-divider {
+    width: 1px; background: var(--gold-dim); opacity: 0.2;
+    align-self: stretch; margin: 0 4px;
+  }
+  .pad-col { display: flex; flex-direction: column; gap: 14px; padding: 0 6px; }
+  .col-head {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--ink-soft); opacity: 0.7; text-align: center;
+    padding-bottom: 6px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .field-label {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--ink-soft); opacity: 0.55; font-weight: 700;
+    transition: color 150ms;
+  }
+  .field-label.nilmode { color: var(--gold-dim); opacity: 0.9; }
+
+  /* poker-chip steppers */
+  .stepper {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .stepper button {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--cream);
+    border: 2px solid var(--gold-dim);
+    box-shadow: inset 0 0 0 3px var(--cream), inset 0 0 0 4px rgba(156,126,30,0.3), var(--card-shadow-sm);
+    color: var(--ink);
+    font-family: Georgia, serif;
+    font-size: 24px; font-weight: 400; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+    transition: transform 80ms, box-shadow 80ms;
+    user-select: none; -webkit-user-select: none;
+  }
+  .stepper button:active {
+    transform: scale(0.92);
+    box-shadow: inset 0 0 0 3px var(--cream), inset 0 0 0 4px rgba(156,126,30,0.5), 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .stepper .val {
+    min-width: 44px; text-align: center;
+    font-family: Georgia, serif;
+    font-size: 28px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink); line-height: 1;
+  }
+
+  /* smaller chip for nil-took sub-stepper */
+  .stepper.sm button {
+    width: 36px; height: 36px; font-size: 20px;
+    box-shadow: inset 0 0 0 2px var(--cream), inset 0 0 0 3px rgba(156,126,30,0.3), var(--card-shadow-sm);
+  }
+  .stepper.sm .val { min-width: 32px; font-size: 22px; }
+
+  /* nil control strip */
+  .nil-strip {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    min-height: 24px;
+  }
+  .nil-check {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--ink-soft); opacity: 0.6;
+  }
+  .nil-check input {
+    width: 16px; height: 16px; accent-color: var(--gold-dim);
+    margin: 0;
+  }
+  .nil-check.active { color: var(--ink); opacity: 1; font-weight: 700; }
+  .nil-sub {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--ink-soft); opacity: 0.5;
+    margin-top: 2px;
+  }
+  .nil-sub input {
+    width: 14px; height: 14px; accent-color: var(--gold-dim);
+    margin: 0;
+  }
+  .nil-sub.active { opacity: 0.9; color: var(--ink); font-weight: 700; }
+
+  /* nil-took sub-field: slides in when nil is active */
+  .niltook-field {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    overflow: hidden;
+    max-height: 0; opacity: 0;
+    transition: max-height 200ms ease-out, opacity 150ms, margin-top 200ms;
+  }
+  .niltook-field.show {
+    max-height: 80px; opacity: 1; margin-top: 4px;
+  }
+  .niltook-label {
+    font-size: 8px; text-transform: uppercase; letter-spacing: 0.16em;
+    color: var(--gold-dim); opacity: 0.8; font-weight: 700;
+  }
+
+  /* ───────── BUTTONS ───────── */
+  .btn {
+    display: block; width: 100%; min-height: 48px;
+    padding: 14px 18px;
+    font-family: Georgia, serif;
+    font-size: 15px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    border-radius: 8px; border: none;
+    transition: transform 80ms, filter 120ms;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-brass {
+    background: linear-gradient(to bottom, var(--gold-bright), var(--gold));
+    color: var(--ink);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset, 0 -1px 0 rgba(0,0,0,0.15) inset, var(--card-shadow-sm);
+  }
+  .btn-brass:active { filter: brightness(0.96); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid rgba(201,162,39,0.35);
+    font-size: 12px; min-height: 42px; padding: 10px 12px;
+  }
+  .btn-ghost:active { background: rgba(201,162,39,0.08); }
+
+  .btn-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;
+  }
+
+  .score-btn-wrap { margin-top: 18px; position: relative; z-index: 1; }
+
+  /* ───────── HISTORY LEDGER ───────── */
+  .history {
+    background: var(--cream);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: 14px; margin-bottom: 18px;
+    position: relative; overflow: hidden;
+  }
+  .history::before {
+    content: "";
+    position: absolute; inset: 6px;
+    border: 1px solid var(--gold-dim);
+    border-radius: calc(var(--card-radius) - 4px);
+    opacity: 0.25; pointer-events: none;
+  }
+  .history summary {
+    font-family: Georgia, serif;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--gold-dim);
+    list-style: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 2px; position: relative; z-index: 1;
+  }
+  .history summary::-webkit-details-marker { display: none; }
+  .history summary .chev { font-size: 10px; transition: transform 150ms; opacity: 0.6; }
+  .history[open] summary .chev { transform: rotate(90deg); }
+  .history-list { margin-top: 12px; max-height: 42vh; overflow-y: auto; position: relative; z-index: 1; }
+
+  .history-row {
+    display: grid; grid-template-columns: 34px 1fr 1fr;
+    gap: 10px; padding: 10px 2px;
+    border-top: 1px solid rgba(156,126,30,0.15);
+    font-variant-numeric: tabular-nums;
+    align-items: center;
+  }
+  .history-row.dealt { animation: deal 320ms cubic-bezier(0.2, 0.9, 0.3, 1.1); }
+  @keyframes deal {
+    from { transform: translateY(-8px) rotate(-1.5deg); opacity: 0; }
+    to   { transform: translateY(0) rotate(0); opacity: 1; }
+  }
+  .history-row .rnd {
+    font-family: Georgia, serif;
+    font-size: 10px; color: var(--gold-dim);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    opacity: 0.7; line-height: 1.2; text-align: center;
+  }
+  .history-cell { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .history-cell .bt {
+    font-size: 10px; color: var(--ink-soft); opacity: 0.65;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .history-cell .delta {
+    font-family: Georgia, serif;
+    font-size: 17px; font-weight: 700; line-height: 1.1;
+  }
+  .history-cell .delta.pos { color: var(--make); }
+  .history-cell .delta.neg { color: var(--set); }
+  .history-cell .cum {
+    font-size: 10px; color: var(--ink-soft); opacity: 0.55;
+  }
+
+  .history-empty {
+    padding: 28px 12px; text-align: center;
+    position: relative; z-index: 1;
+  }
+  .history-empty .fan {
+    display: flex; justify-content: center; margin-bottom: 12px;
+  }
+  .history-empty .fan span {
+    display: inline-block; width: 22px; height: 30px;
+    background: var(--cream-edge);
+    border: 1px solid rgba(156,126,30,0.25);
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    margin: 0 -2px;
+  }
+  .history-empty .fan span:nth-child(1) { transform: rotate(-14deg) translateX(4px); }
+  .history-empty .fan span:nth-child(2) { transform: rotate(-5deg) translateX(1px); z-index:1; }
+  .history-empty .fan span:nth-child(3) { transform: rotate(5deg) translateX(-1px); z-index:2; }
+  .history-empty .fan span:nth-child(4) { transform: rotate(14deg) translateX(-4px); z-index:3; }
+  .history-empty .msg {
+    font-family: Georgia, serif;
+    font-size: 13px; font-style: italic;
+    color: var(--ink-soft); opacity: 0.55;
+    letter-spacing: 0.04em;
+  }
+
+  /* ───────── SETTINGS ───────── */
+  .settings { padding: 0 4px; margin-bottom: 20px; }
+  .settings summary {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--gold); opacity: 0.7;
+    list-style: none; cursor: pointer; padding: 6px 2px;
+  }
+  .settings summary::-webkit-details-marker { display: none; }
+  .settings-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;
+  }
+  .settings-grid label {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--cream); opacity: 0.6; font-weight: 700; display: block; margin-bottom: 4px;
+  }
+  .settings-grid input[type=number] {
+    width: 100%; padding: 10px; font-size: 16px;
+    font-family: Georgia, serif; font-variant-numeric: tabular-nums;
+    border: 1px solid rgba(201,162,39,0.3);
+    border-radius: 6px; background: rgba(0,0,0,0.2); color: var(--cream);
+  }
+  .settings-grid input[type=number]:focus {
+    outline: none; border-color: var(--gold);
+  }
+
+  /* ───────── MODAL ───────── */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  }
+  .modal {
+    background: var(--cream);
+    border-radius: var(--card-radius);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    padding: 22px; max-width: 320px; width: 100%;
+    position: relative;
+  }
+  .modal::before {
+    content: "";
+    position: absolute; inset: 6px;
+    border: 1px solid var(--gold-dim); opacity: 0.3;
+    border-radius: calc(var(--card-radius) - 4px);
+    pointer-events: none;
+  }
+  .modal h3 {
+    margin: 0 0 6px;
+    font-family: Georgia, serif;
+    font-size: 18px; color: var(--ink);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .modal p { margin: 0 0 18px; color: var(--ink-soft); font-size: 13px; }
+  .modal .btn-ghost { color: var(--ink-soft); border-color: rgba(26,22,18,0.2); }
+  .modal .btn-danger {
+    background: var(--set); color: var(--cream);
+  }
+
+  .hidden { display: none !important; }
+
+  .pip-divider {
+    text-align: center; color: var(--gold); opacity: 0.3;
+    font-size: 8px; letter-spacing: 10px; margin: 4px 0;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="spade-glyph" id="spadeGlyph">♠</span>
+    <h1>Spades</h1>
+  </div>
+  <button id="themeBtn" class="theme-btn" aria-label="Toggle theme">◐</button> </header>
+
+<main>
+  <div id="banner"></div>
+
+  <!-- Two playing cards on the felt -->
+  <div class="table">
+    <div class="score-card">
+      <input class="team-name" id="nameA" value="Team A" aria-label="Team A name" autocomplete="off">
+      <div class="team-score" id="scoreA">0</div>
+      <div class="bag-pips" id="pipsA" aria-hidden="true"></div>
+      <div class="bag-label" id="bagLabelA">0 bags</div>
+      <span class="sr-bags" id="bagsA">🎒 0 bags</span>
+    </div>
+    <div class="score-card">
+      <input class="team-name" id="nameB" value="Team B" aria-label="Team B name" autocomplete="off">
+      <div class="team-score" id="scoreB">0</div>
+      <div class="bag-pips" id="pipsB" aria-hidden="true"></div>
+      <div class="bag-label" id="bagLabelB">0 bags</div>
+      <span class="sr-bags" id="bagsB">🎒 0 bags</span>
+    </div>
+  </div>
+
+  <!-- Score pad -->
+  <div class="pad" id="roundSection">
+    <div class="pad-head">
+      <div class="hand-no" id="roundTitle">Hand 1</div>
+      <div class="tricks-sum" id="tricksSum">Tricks 0 / 13</div>
+    </div>
+
+    <div class="pad-grid">
+      <!-- ═══ TEAM A COLUMN ═══ -->
+      <div class="pad-col">
+        <div class="col-head" id="headA">Team A</div>
+
+        <!-- Nil toggle strip -->
+        <div class="nil-strip">
+          <label class="nil-check" id="nilA-wrap">
+            <input type="checkbox" id="nilA"> ♠ Nil
+          </label>
+          <label class="nil-sub hidden" id="blindA-wrap">
+            <input type="checkbox" id="blindA"> Blind
+          </label>
+        </div>
+
+        <!-- Bid (or Partner Bid when nil) -->
+        <div class="field">
+          <div class="field-label" id="bidA-label">Bid</div>
+          <div class="stepper" data-key="bidA">
+            <button type="button" data-act="dec" aria-label="Decrease bid">−</button>
+            <div class="val" id="bidA-val">0</div>
+            <button type="button" data-act="inc" aria-label="Increase bid">+</button>
+          </div>
+        </div>
+
+        <!-- Team Tricks -->
+        <div class="field">
+          <div class="field-label">Tricks</div>
+          <div class="stepper" data-key="tricksA">
+            <button type="button" data-act="dec" aria-label="Decrease tricks">−</button>
+            <div class="val" id="tricksA-val">0</div>
+            <button type="button" data-act="inc" aria-label="Increase tricks">+</button>
+          </div>
+          <!-- Nil-took sub-stepper (slides in when nil active) -->
+          <div class="niltook-field" id="nilTookA-field">
+            <div class="niltook-label">Nil Took</div>
+            <div class="stepper sm" data-key="nilTookA">
+              <button type="button" data-act="dec" aria-label="Decrease nil took">−</button>
+              <div class="val" id="nilTookA-val">0</div>
+              <button type="button" data-act="inc" aria-label="Increase nil took">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pad-divider"></div>
+
+      <!-- ═══ TEAM B COLUMN ═══ -->
+      <div class="pad-col">
+        <div class="col-head" id="headB">Team B</div>
+
+        <div class="nil-strip">
+          <label class="nil-check" id="nilB-wrap">
+            <input type="checkbox" id="nilB"> ♠ Nil
+          </label>
+          <label class="nil-sub hidden" id="blindB-wrap">
+            <input type="checkbox" id="blindB"> Blind
+          </label>
+        </div>
+
+        <div class="field">
+          <div class="field-label" id="bidB-label">Bid</div>
+          <div class="stepper" data-key="bidB">
+            <button type="button" data-act="dec" aria-label="Decrease bid">−</button>
+            <div class="val" id="bidB-val">0</div>
+            <button type="button" data-act="inc" aria-label="Increase bid">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Tricks</div>
+          <div class="stepper" data-key="tricksB">
+            <button type="button" data-act="dec" aria-label="Decrease tricks">−</button>
+            <div class="val" id="tricksB-val">0</div>
+            <button type="button" data-act="inc" aria-label="Increase tricks">+</button>
+          </div>
+          <div class="niltook-field" id="nilTookB-field">
+            <div class="niltook-label">Nil Took</div>
+            <div class="stepper sm" data-key="nilTookB">
+              <button type="button" data-act="dec" aria-label="Decrease nil took">−</button>
+              <div class="val" id="nilTookB-val">0</div>
+              <button type="button" data-act="inc" aria-label="Increase nil took">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-btn-wrap">
+      <button class="btn btn-brass" id="scoreBtn">Score Hand</button>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-ghost" id="undoBtn">Undo Last</button>
+    <button class="btn btn-ghost" id="newGameBtn">New Game</button>
+  </div>
+
+  <div class="pip-divider">♠ ♠ ♠</div>
+
+  <!-- History ledger -->
+  <details class="history" id="historyDetails" open>
+    <summary>Ledger <span id="historyCount"></span><span class="chev">▸</span></summary>
+    <div class="history-list" id="historyList"></div>
+  </details>
+
+  <!-- Settings -->
+  <details class="settings">
+    <summary>♠ Table Rules</summary>
+    <div class="settings-grid">
+      <div>
+        <label for="targetScore">Win at</label>
+        <input type="number" id="targetScore" value="500" step="50">
+      </div>
+      <div>
+        <label for="loseScore">Lose at</label>
+        <input type="number" id="loseScore" value="-200" step="50">
+      </div>
+    </div>
+  </details>
+</main>
+
+<!-- Confirm modal -->
+<div class="modal-backdrop hidden" id="confirmModal">
+  <div class="modal">
+    <h3>New Game?</h3>
+    <p>Clear the ledger and start fresh. Scores and hands will be reset.</p>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn btn-ghost" id="confirmCancel">Cancel</button>
+      <button class="btn btn-danger" id="confirmOk">New Game</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORAGE_KEY = 'spades-tracker-v1';
+  const THEME_KEY = 'spades-tracker-theme';
+
+  // ---------- State ----------
+  let state;
+
+  function defaultEntry() {
+    return {
+      bidA: 0, bidB: 0,
+      tricksA: 0, tricksB: 0,
+      nilA: false, nilB: false,
+      blindA: false, blindB: false,
+      nilTookA: 0, nilTookB: 0,
+    };
+  }
+
+  function defaultState() {
+    return {
+      names: ['Team A', 'Team B'],
+      target: 500,
+      lose: -200,
+      rounds: [],
+      entry: defaultEntry(),
+    };
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultState();
+      const parsed = JSON.parse(raw);
+      return { ...defaultState(), ...parsed, entry: { ...defaultEntry(), ...(parsed.entry || {}) } };
+    } catch { return defaultState(); }
+  }
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+  }
+
+  // ---------- Scoring ----------
+  /**
+   * Score one team for a single round.
+   *
+   * Nil semantics: when `nil` is truthy, one partner is going nil (or blind
+   * nil). `bid` is then the OTHER partner's bid, `tricks` is the team's total
+   * tricks, and `nilTook` is how many of those the nil player personally took.
+   *   · nil component: ±100 (or ±200 blind) based on nilTook === 0
+   *   · partner component: contract scored against team tricks
+   *   · bags: partner's overtricks (team tricks − partner bid) — the nil
+   *     player's tricks are already included in the team total.
+   *
+   * Double nil (nil=true AND bid=0): both partners nil. Both use `blind`
+   * setting. Succeeds only if team tricks = 0 → +200 (+400 blind). Else both
+   * fail → -200 (-400 blind), all team tricks become bags.
+   *
+   * Legacy rounds (nil === undefined): v1 "team nil" behaviour — a bid of 0
+   * auto-scores as nil ±100/±200 against the team tricks, preserving any
+   * saved games from before the nil refactor.
+   */
+  function scoreTeam(bid, tricks, blind, nil, nilTook) {
+    // ── legacy path: pre-partner-nil rounds stored with no `nil` flag ──
+    if (nil === undefined) {
+      if (bid === 0) {
+        const base = blind ? 200 : 100;
+        if (tricks === 0) return { delta: base, bagsGained: 0, note: blind ? 'BN ✓' : 'Nil ✓' };
+        return { delta: -base, bagsGained: tricks, note: blind ? 'BN ✗' : 'Nil ✗' };
+      }
+      return scoreContract(bid, tricks);
+    }
+
+    // ── partner-nil path ──
+    if (nil) {
+      if (bid === 0) {
+        // double nil (rare): both partners nil, both share the blind status
+        const base = blind ? 400 : 200;
+        if (tricks === 0) return { delta: base, bagsGained: 0, note: blind ? 'Dbl BN ✓' : 'Dbl Nil ✓' };
+        return { delta: -base, bagsGained: tricks, note: blind ? 'Dbl BN ✗' : 'Dbl Nil ✗' };
+      }
+      const nilBase = blind ? 200 : 100;
+      const nilMade = nilTook === 0;
+      const nilDelta = nilMade ? nilBase : -nilBase;
+      const p = scoreContract(bid, tricks);
+      const tag = blind ? 'BN' : 'Nil';
+      const mark = nilMade ? '✓' : '✗';
+      const sign = nilDelta >= 0 ? '+' : '';
+      return {
+        delta: nilDelta + p.delta,
+        bagsGained: p.bagsGained,
+        note: `♠${tag} ${mark} ${sign}${nilDelta} / ${bid}→${tricks}`,
+      };
+    }
+
+    // ── plain team contract ──
+    return scoreContract(bid, tricks);
+  }
+
+  /** Standard contract: make = bid×10 + overtricks, set = −bid×10. */
+  function scoreContract(bid, tricks) {
+    if (tricks >= bid) {
+      const over = tricks - bid;
+      return { delta: bid * 10 + over, bagsGained: over, note: '' };
+    }
+    return { delta: -(bid * 10), bagsGained: 0, note: 'set' };
+  }
+
+  function applyBagPenalty(bagsBefore, bagsGained) {
+    let total = bagsBefore + bagsGained;
+    let penalty = 0;
+    while (total >= 10) { penalty += 100; total -= 10; }
+    return { bagsAfter: total, penalty };
+  }
+
+  function computeTotals() {
+    let scoreA = 0, scoreB = 0, bagsA = 0, bagsB = 0;
+    const rows = [];
+    for (const r of state.rounds) {
+      const a = scoreTeam(r.bidA, r.tricksA, r.blindA, r.nilA, r.nilTookA);
+      const b = scoreTeam(r.bidB, r.tricksB, r.blindB, r.nilB, r.nilTookB);
+      const penA = applyBagPenalty(bagsA, a.bagsGained);
+      const penB = applyBagPenalty(bagsB, b.bagsGained);
+      const dA = a.delta - penA.penalty;
+      const dB = b.delta - penB.penalty;
+      scoreA += dA; scoreB += dB;
+      bagsA = penA.bagsAfter; bagsB = penB.bagsAfter;
+      rows.push({
+        ...r, dA, dB, scoreA, scoreB, bagsA, bagsB,
+        noteA: a.note + (penA.penalty ? ' −' + penA.penalty + '🎒' : ''),
+        noteB: b.note + (penB.penalty ? ' −' + penB.penalty + '🎒' : ''),
+        bagGainA: a.bagsGained, bagGainB: b.bagsGained,
+      });
+    }
+    return { scoreA, scoreB, bagsA, bagsB, rows };
+  }
+
+  // ---------- DOM refs ----------
+  const $ = id => document.getElementById(id);
+  const nameA = $('nameA'), nameB = $('nameB');
+  const scoreAEl = $('scoreA'), scoreBEl = $('scoreB');
+  const bagsAEl = $('bagsA'), bagsBEl = $('bagsB');
+  const pipsAEl = $('pipsA'), pipsBEl = $('pipsB');
+  const bagLabelA = $('bagLabelA'), bagLabelB = $('bagLabelB');
+  const headA = $('headA'), headB = $('headB');
+  const tricksSumEl = $('tricksSum');
+  const roundTitle = $('roundTitle');
+  const historyList = $('historyList'), historyCount = $('historyCount');
+  const bannerEl = $('banner');
+  const undoBtn = $('undoBtn'), scoreBtn = $('scoreBtn');
+  const targetInput = $('targetScore'), loseInput = $('loseScore');
+  const nilA = $('nilA'), nilB = $('nilB');
+  const blindA = $('blindA'), blindB = $('blindB');
+
+  let priorBags = { A: -1, B: -1 };
+  let priorScores = { A: null, B: null };
+
+  // ---------- Render ----------
+  function render(opts = {}) {
+    const t = computeTotals();
+    const dealt = opts.dealt || false;
+
+    nameA.value = state.names[0];
+    nameB.value = state.names[1];
+    headA.textContent = state.names[0];
+    headB.textContent = state.names[1];
+
+    renderScore(scoreAEl, t.scoreA, 'A');
+    renderScore(scoreBEl, t.scoreB, 'B');
+
+    renderBags('A', t.bagsA);
+    renderBags('B', t.bagsB);
+
+    renderStepper('bidA', state.entry.bidA);
+    renderStepper('bidB', state.entry.bidB);
+    renderStepper('tricksA', state.entry.tricksA);
+    renderStepper('tricksB', state.entry.tricksB);
+    renderStepper('nilTookA', state.entry.nilTookA);
+    renderStepper('nilTookB', state.entry.nilTookB);
+
+    nilA.checked = state.entry.nilA;
+    nilB.checked = state.entry.nilB;
+    blindA.checked = state.entry.blindA;
+    blindB.checked = state.entry.blindB;
+    renderNilControls('A');
+    renderNilControls('B');
+
+    const sum = state.entry.tricksA + state.entry.tricksB;
+    tricksSumEl.textContent = `Tricks ${sum} / 13`;
+    tricksSumEl.classList.toggle('bad', sum !== 13 && sum !== 0);
+
+    roundTitle.textContent = `Hand ${state.rounds.length + 1}`;
+
+    renderHistory(t.rows, dealt);
+
+    targetInput.value = state.target;
+    loseInput.value = state.lose;
+
+    undoBtn.disabled = state.rounds.length === 0;
+
+    const over = gameOver(t);
+    if (over) {
+      bannerEl.innerHTML = `<div class="trophy"><div class="plaque">♠ Winner ♠</div><div class="name">${escapeHtml(over.winner)}</div><div class="reason">${escapeHtml(over.reason)}</div></div>`;
+      scoreBtn.disabled = true;
+    } else {
+      bannerEl.innerHTML = '';
+      scoreBtn.disabled = false;
+    }
+
+    priorBags = { A: t.bagsA, B: t.bagsB };
+    priorScores = { A: t.scoreA, B: t.scoreB };
+  }
+
+  function renderScore(el, score, side) {
+    const changed = priorScores[side] !== null && priorScores[side] !== score;
+    el.textContent = score;
+    el.classList.toggle('neg', score < 0);
+    if (changed) {
+      el.classList.remove('flip');
+      void el.offsetWidth;
+      el.classList.add('flip');
+    }
+  }
+
+  function renderBags(side, bags) {
+    const srEl = side === 'A' ? bagsAEl : bagsBEl;
+    srEl.textContent = `🎒 ${bags} bag${bags === 1 ? '' : 's'}`;
+
+    const pipsEl = side === 'A' ? pipsAEl : pipsBEl;
+    const prev = priorBags[side];
+    let html = '';
+    for (let i = 0; i < 10; i++) {
+      const on = i < bags;
+      const isNew = on && prev >= 0 && i >= prev;
+      html += `<span class="pip${on ? ' on' : ''}${isNew ? ' pop' : ''}">♠</span>`;
+    }
+    pipsEl.innerHTML = html;
+
+    const labelEl = side === 'A' ? bagLabelA : bagLabelB;
+    labelEl.textContent = `${bags} bag${bags === 1 ? '' : 's'}`;
+    labelEl.classList.remove('warn', 'danger');
+    if (bags >= 9) labelEl.classList.add('danger');
+    else if (bags >= 7) labelEl.classList.add('warn');
+  }
+
+  function renderStepper(key, val) {
+    const el = $(key + '-val');
+    if (!el) return;
+    el.textContent = val;
+  }
+
+  /**
+   * Toggle nil UI for one side: blind sub-checkbox, partner-bid relabel,
+   * and the slide-in "nil took" stepper.
+   */
+  function renderNilControls(side) {
+    const isNil = state.entry['nil' + side];
+    const isBlind = state.entry['blind' + side];
+
+    const nilWrap = $('nil' + side + '-wrap');
+    const blindWrap = $('blind' + side + '-wrap');
+    const bidLabel = $('bid' + side + '-label');
+    const tookField = $('nilTook' + side + '-field');
+
+    nilWrap.classList.toggle('active', isNil);
+    blindWrap.classList.toggle('hidden', !isNil);
+    blindWrap.classList.toggle('active', isBlind);
+
+    if (isNil) {
+      const bid = state.entry['bid' + side];
+      bidLabel.textContent = bid === 0 ? 'Double Nil' : 'Partner Bid';
+      bidLabel.classList.add('nilmode');
+      tookField.classList.toggle('show', bid > 0); // double-nil uses team tricks only
+    } else {
+      bidLabel.textContent = 'Bid';
+      bidLabel.classList.remove('nilmode');
+      tookField.classList.remove('show');
+      // clear dependent state when nil is unchecked
+      if (state.entry['blind' + side]) { state.entry['blind' + side] = false; $('blind' + side).checked = false; }
+      if (state.entry['nilTook' + side]) { state.entry['nilTook' + side] = 0; renderStepper('nilTook' + side, 0); }
+    }
+  }
+
+  function renderHistory(rows, dealt) {
+    historyCount.textContent = rows.length ? `· ${rows.length}` : '';
+    if (!rows.length) {
+      historyList.innerHTML = `<div class="history-empty">
+        <div class="fan"><span></span><span></span><span></span><span></span></div>
+        <div class="msg">Shuffle up and deal</div>
+      </div>`;
+      return;
+    }
+    const latestIdx = rows.length - 1;
+    const html = rows.map((r, i) => {
+      const isDealt = dealt && i === latestIdx;
+      return `<div class="history-row${isDealt ? ' dealt' : ''}">
+        <div class="rnd">H${i + 1}</div>
+        <div class="history-cell">
+          <span class="bt">${describeBid(r, 'A')}${r.noteA ? ' · ' + r.noteA : ''}</span>
+          <span class="delta ${r.dA >= 0 ? 'pos' : 'neg'}">${r.dA >= 0 ? '+' : ''}${r.dA}</span>
+          <span class="cum">= ${r.scoreA}${r.bagGainA ? ` · +${r.bagGainA}♠` : ''}</span>
+        </div>
+        <div class="history-cell">
+          <span class="bt">${describeBid(r, 'B')}${r.noteB ? ' · ' + r.noteB : ''}</span>
+          <span class="delta ${r.dB >= 0 ? 'pos' : 'neg'}">${r.dB >= 0 ? '+' : ''}${r.dB}</span>
+          <span class="cum">= ${r.scoreB}${r.bagGainB ? ` · +${r.bagGainB}♠` : ''}</span>
+        </div>
+      </div>`;
+    }).reverse().join('');
+    historyList.innerHTML = html;
+  }
+
+  function describeBid(r, side) {
+    const bid = r['bid' + side], tricks = r['tricks' + side];
+    const nil = r['nil' + side], blind = r['blind' + side];
+    if (nil === undefined) {
+      // legacy round
+      if (bid === 0) return `${blind ? 'BN' : 'Nil'} · ${tricks} won`;
+      return `${bid} bid · ${tricks} won`;
+    }
+    if (nil) {
+      if (bid === 0) return `${blind ? 'Dbl BN' : 'Dbl Nil'} · ${tricks} won`;
+      return `${blind ? 'BN' : 'Nil'}+${bid} · ${tricks} won`;
+    }
+    return `${bid} bid · ${tricks} won`;
+  }
+
+  function gameOver(t) {
+    const aWin = t.scoreA >= state.target;
+    const bWin = t.scoreB >= state.target;
+    const aLose = t.scoreA <= state.lose;
+    const bLose = t.scoreB <= state.lose;
+    if (!aWin && !bWin && !aLose && !bLose) return null;
+    if (aWin || bWin) {
+      if (aWin && bWin) {
+        if (t.scoreA === t.scoreB) return null;
+        const winner = t.scoreA > t.scoreB ? state.names[0] : state.names[1];
+        return { winner, reason: `Both reached ${state.target} — higher score wins` };
+      }
+      const winner = aWin ? state.names[0] : state.names[1];
+      return { winner, reason: `Reached ${state.target} points` };
+    }
+    if (aLose && bLose) {
+      if (t.scoreA === t.scoreB) return null;
+      const winner = t.scoreA > t.scoreB ? state.names[0] : state.names[1];
+      return { winner, reason: `Opponent fell to ${state.lose}` };
+    }
+    const winner = aLose ? state.names[1] : state.names[0];
+    return { winner, reason: `Opponent fell to ${state.lose}` };
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c =>
+({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- Events ----------
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  document.querySelectorAll('.stepper').forEach(stepper => {
+    const key = stepper.dataset.key;
+    stepper.querySelectorAll('button').forEach(btn => {
+      const act = btn.dataset.act;
+      const step = () => {
+        const delta = act === 'inc' ? 1 : -1;
+        state.entry[key] = clamp(state.entry[key] + delta, 0, 13);
+        renderStepper(key, state.entry[key]);
+        if (key === 'tricksA' || key === 'tricksB') {
+          const sum = state.entry.tricksA + state.entry.tricksB;
+          tricksSumEl.textContent = `Tricks ${sum} / 13`;
+          tricksSumEl.classList.toggle('bad', sum !== 13 && sum !== 0);
+        }
+        // bid crossing 0 while nil active switches partner-bid ↔ double-nil label
+        if (key === 'bidA' && state.entry.nilA) renderNilControls('A');
+        if (key === 'bidB' && state.entry.nilB) renderNilControls('B');
+        save();
+      };
+      let repeatTimer = null, repeatInterval = null;
+      const start = (e) => {
+        e.preventDefault();
+        step();
+        repeatTimer = setTimeout(() => {
+          repeatInterval = setInterval(step, 80);
+        }, 450);
+      };
+      const stop = () => {
+        clearTimeout(repeatTimer); clearInterval(repeatInterval);
+        repeatTimer = repeatInterval = null;
+      };
+      btn.addEventListener('pointerdown', start);
+      btn.addEventListener('pointerup', stop);
+      btn.addEventListener('pointerleave', stop);
+      btn.addEventListener('pointercancel', stop);
+    });
+  });
+
+  nilA.addEventListener('change', () => { state.entry.nilA = nilA.checked; renderNilControls('A'); save(); });
+  nilB.addEventListener('change', () => { state.entry.nilB = nilB.checked; renderNilControls('B'); save(); });
+  blindA.addEventListener('change', () => { state.entry.blindA = blindA.checked; renderNilControls('A'); save(); });
+  blindB.addEventListener('change', () => { state.entry.blindB = blindB.checked; renderNilControls('B'); save(); });
+
+  nameA.addEventListener('input', () => { state.names[0] = nameA.value || 'Team A'; headA.textContent = state.names[0]; save(); });
+  nameB.addEventListener('input', () => { state.names[1] = nameB.value || 'Team B'; headB.textContent = state.names[1]; save(); });
+  nameA.addEventListener('blur', () => render());
+  nameB.addEventListener('blur', () => render());
+
+  targetInput.addEventListener('change', () => { state.target = parseInt(targetInput.value, 10) || 500; save(); render(); });
+  loseInput.addEventListener('change', () => { state.lose = parseInt(loseInput.value, 10) || -200; save(); render(); });
+
+  scoreBtn.addEventListener('click', () => {
+    const e = state.entry;
+    const sum = e.tricksA + e.tricksB;
+    if (sum !== 13) {
+      if (!confirm(`Tricks total is ${sum}, not 13. Score anyway?`)) return;
+    }
+    state.rounds.push({
+      bidA: e.bidA, bidB: e.bidB,
+      tricksA: e.tricksA, tricksB: e.tricksB,
+      nilA: e.nilA, nilB: e.nilB,
+      blindA: e.blindA, blindB: e.blindB,
+      nilTookA: e.nilTookA, nilTookB: e.nilTookB,
+    });
+    state.entry = defaultEntry();
+    save(); render({ dealt: true });
+  });
+
+  undoBtn.addEventListener('click', () => {
+    if (!state.rounds.length) return;
+    const last = state.rounds.pop();
+    state.entry = { ...defaultEntry(), ...last };
+    save(); render();
+  });
+
+  const modal = $('confirmModal');
+  $('newGameBtn').addEventListener('click', () =>
+modal.classList.remove('hidden'));
+  $('confirmCancel').addEventListener('click', () => modal.classList.add('hidden'));
+  $('confirmOk').addEventListener('click', () => {
+    const keepNames = state.names.slice();
+    const keepTarget = state.target, keepLose = state.lose;
+    state = defaultState();
+    state.names = keepNames;
+    state.target = keepTarget;
+    state.lose = keepLose;
+    modal.classList.add('hidden');
+    priorBags = { A: -1, B: -1 };
+    priorScores = { A: null, B: null };
+    save(); render();
+  });
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+
+  const glyph = $('spadeGlyph');
+  glyph.addEventListener('click', () => {
+    glyph.classList.remove('spin');
+    void glyph.offsetWidth;
+    glyph.classList.add('spin');
+  });
+
+  // ---------- Theme ----------
+  function applyTheme(mode) {
+    const root = document.documentElement;
+    root.classList.remove('dark', 'light');
+    if (mode === 'dark') root.classList.add('dark');
+    else if (mode === 'light') root.classList.add('light');
+  }
+  function currentThemePref() {
+    try { return localStorage.getItem(THEME_KEY) || 'auto'; } catch { return 'auto'; }
+  }
+  function cycleTheme() {
+    const order = ['auto', 'dark', 'light'];
+    const next = order[(order.indexOf(currentThemePref()) + 1) % order.length];
+    try { localStorage.setItem(THEME_KEY, next); } catch {}
+    applyTheme(next);
+    const btn = $('themeBtn');
+    btn.textContent = next === 'auto' ? '◐' : next === 'dark' ? '●' : '○';
+    btn.title = `Theme: ${next}`;
+  }
+  $('themeBtn').addEventListener('click', cycleTheme);
+
+  // ---------- Init ----------
+  state = load();
+  applyTheme(currentThemePref());
+  {
+    const btn = $('themeBtn');
+    const p = currentThemePref();
+    btn.textContent = p === 'auto' ? '◐' : p === 'dark' ? '●' : '○';
+    btn.title = `Theme: ${p}`;
+  }
+  render();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+
+  window.__spades = { scoreTeam, scoreContract, applyBagPenalty, computeTotals, state: () => state };
+})();
+</script>
+</body>
+</html>
