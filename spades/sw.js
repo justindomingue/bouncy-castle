@@ -1,9 +1,6 @@
-/* Simple cache-first service worker for Spades Tracker */ const CACHE = 'spades-v1';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-];
+/* Service worker for Spades Tracker — stale-while-revalidate */
+const CACHE = 'spades-v2';
+const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -22,18 +19,18 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((resp) => {
-          // Cache successful same-origin responses
+    caches.open(CACHE).then((cache) =>
+      cache.match(event.request).then((cached) => {
+        // Always fetch fresh copy in background
+        const fetchPromise = fetch(event.request).then((resp) => {
           if (resp.ok && new URL(event.request.url).origin === location.origin) {
-            const clone = resp.clone();
-            caches.open(CACHE).then((c) => c.put(event.request, clone));
+            cache.put(event.request, resp.clone());
           }
           return resp;
-        })
-        .catch(() => cached); // offline fallback (may be undefined)
-    })
+        });
+        // Return cached immediately if available, otherwise wait for network
+        return cached || fetchPromise;
+      })
+    )
   );
 });

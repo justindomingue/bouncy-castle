@@ -105,8 +105,8 @@ section('scoreContract — make');
 eq(scoreContract(4, 4), { delta: 40, bagsGained: 0, note: '' },
   'Exact bid: 4 bid, 4 tricks → +40, 0 bags');
 
-eq(scoreContract(3, 5), { delta: 32, bagsGained: 2, note: '' },
-  'Overbid: 3 bid, 5 tricks → +32, 2 bags');
+eq(scoreContract(3, 5), { delta: 30, bagsGained: 2, note: '' },
+  'Overtrick: 3 bid, 5 tricks → +30, 2 bags');
 
 eq(scoreContract(1, 1), { delta: 10, bagsGained: 0, note: '' },
   'Minimum bid: 1 bid, 1 trick → +10');
@@ -114,8 +114,8 @@ eq(scoreContract(1, 1), { delta: 10, bagsGained: 0, note: '' },
 eq(scoreContract(13, 13), { delta: 130, bagsGained: 0, note: '' },
   'Max bid: 13 bid, 13 tricks → +130');
 
-eq(scoreContract(1, 13), { delta: 22, bagsGained: 12, note: '' },
-  'Max overtrick: 1 bid, 13 tricks → +22, 12 bags');
+eq(scoreContract(1, 13), { delta: 10, bagsGained: 12, note: '' },
+  'Max overtrick: 1 bid, 13 tricks → +10, 12 bags');
 
 section('scoreContract — set');
 
@@ -182,8 +182,8 @@ eq(scoreTeam(0, 2, true, undefined, 0),
   'Legacy blind nil broken → -200, 2 bags');
 
 eq(scoreTeam(4, 5, false, undefined, 0),
-  { delta: 41, bagsGained: 1, note: '' },
-  'Legacy normal contract: 4 bid, 5 tricks → +41');
+  { delta: 40, bagsGained: 1, note: '' },
+  'Legacy normal contract: 4 bid, 5 tricks → +40');
 
 eq(scoreTeam(4, 3, false, undefined, 0),
   { delta: -40, bagsGained: 0, note: 'set' },
@@ -199,8 +199,8 @@ eq(scoreTeam(4, 4, false, false, 0),
   'Standard exact: 4 bid, 4 tricks → +40');
 
 eq(scoreTeam(3, 6, false, false, 0),
-  { delta: 33, bagsGained: 3, note: '' },
-  'Standard overtrick: 3 bid, 6 tricks → +33');
+  { delta: 30, bagsGained: 3, note: '' },
+  'Standard overtrick: 3 bid, 6 tricks → +30');
 
 eq(scoreTeam(5, 2, false, false, 0),
   { delta: -50, bagsGained: 0, note: 'set' },
@@ -219,16 +219,16 @@ eq(scoreTeam(4, 4, false, true, 0).bagsGained, 0,
   'Partner nil made, exact — 0 bags');
 
 // Partner nil broken
-eq(scoreTeam(4, 5, false, true, 2).delta, -59,
-  'Partner nil broken (4 bid, 5 tricks, nilTook=2) → -100 nil + 41 contract = -59');
+eq(scoreTeam(4, 5, false, true, 2).delta, -60,
+  'Partner nil broken (4 bid, 5 tricks, nilTook=2) → -100 nil + 40 contract = -60');
 
 // Blind partner nil made
 eq(scoreTeam(3, 3, true, true, 0).delta, 230,
   'Blind partner nil made (3 bid, 3 tricks) → +200 nil + 30 contract = 230');
 
 // Blind partner nil broken
-eq(scoreTeam(3, 5, true, true, 1).delta, -168,
-  'Blind partner nil broken (3 bid, 5 tricks, nilTook=1) → -200 nil + 32 = -168');
+eq(scoreTeam(3, 5, true, true, 1).delta, -170,
+  'Blind partner nil broken (3 bid, 5 tricks, nilTook=1) → -200 nil + 30 = -170');
 
 // Partner nil made but partner set
 eq(scoreTeam(5, 3, false, true, 0).delta, 50,
@@ -280,7 +280,7 @@ stateObj.rounds.push({
   bidB: 3, tricksB: 3, nilB: false, blindB: false, nilTookB: 0,
 });
 let t = computeTotals();
-eq(t.scoreA, 41, 'R1: Team A → 41 (4 bid, 5 tricks)');
+eq(t.scoreA, 40, 'R1: Team A → 40 (4 bid, 5 tricks)');
 eq(t.scoreB, 30, 'R1: Team B → 30 (3 bid, 3 tricks)');
 eq(t.bagsA, 1, 'R1: Team A bags → 1');
 eq(t.bagsB, 0, 'R1: Team B bags → 0');
@@ -291,7 +291,7 @@ stateObj.rounds.push({
   bidB: 5, tricksB: 3, nilB: false, blindB: false, nilTookB: 0,
 });
 t = computeTotals();
-eq(t.scoreA, 74, 'R2: Team A → 41 + 33 = 74');
+eq(t.scoreA, 70, 'R2: Team A → 40 + 30 = 70');
 eq(t.scoreB, -20, 'R2: Team B → 30 + -50 = -20');
 eq(t.bagsA, 4, 'R2: Team A bags → 1 + 3 = 4');
 eq(t.bagsB, 0, 'R2: Team B bags → 0');
@@ -302,7 +302,7 @@ stateObj.rounds.push({
   bidB: 4, tricksB: 4, nilB: false, blindB: false, nilTookB: 0,
 });
 t = computeTotals();
-eq(t.scoreA, 74 + 26 - 100, 'R3: Team A → 74 + 26 - 100(bag penalty) = 0');
+eq(t.scoreA, 70 + 20 - 100, 'R3: Team A → 70 + 20 - 100(bag penalty) = -10');
 eq(t.bagsA, 0, 'R3: Team A bags reset to 0 after penalty');
 eq(t.scoreB, 20, 'R3: Team B → -20 + 40 = 20');
 
@@ -312,7 +312,7 @@ stateObj.rounds.push({
   bidB: 4, tricksB: 4, nilB: false, blindB: false, nilTookB: 0,
 });
 t = computeTotals();
-eq(t.scoreA, 0 + 131, 'R4: Team A → 0 + 100(nil) + 31(contract) = 131');
+eq(t.scoreA, -10 + 130, 'R4: Team A → -10 + 100(nil) + 30(contract) = 120');
 eq(t.scoreB, 60, 'R4: Team B → 20 + 40 = 60');
 
 // ═══════════════════════════════════════════════
@@ -323,8 +323,8 @@ section('Edge cases');
 eq(scoreContract(0, 0), { delta: 0, bagsGained: 0, note: '' },
   'Zero bid, zero tricks (degenerate) → 0');
 
-eq(scoreContract(0, 5), { delta: 5, bagsGained: 5, note: '' },
-  'Zero bid, 5 tricks → +5, 5 bags (all overtricks)');
+eq(scoreContract(0, 5), { delta: 0, bagsGained: 5, note: '' },
+  'Zero bid, 5 tricks → +0, 5 bags (all overtricks)');
 
 eq(applyBagPenalty(0, 0), { bagsAfter: 0, penalty: 0 },
   'Zero bags, zero gained → no penalty');
@@ -335,7 +335,7 @@ eq(pnOver.bagsGained, 4, 'Partner nil made, 3 bid 7 tricks → 4 bags from contr
 
 // Partner nil broken, tricks split
 const pnBroken = scoreTeam(4, 6, false, true, 2);
-assert(pnBroken.delta === -100 + 42, 'Partner nil broken (nilTook=2) + contract 4 bid 6 tricks: -100 + 42 = -58');
+assert(pnBroken.delta === -100 + 40, 'Partner nil broken (nilTook=2) + contract 4 bid 6 tricks: -100 + 40 = -60');
 eq(pnBroken.bagsGained, 2, 'Partner nil broken, 4 bid 6 tricks → 2 bags from contract');
 
 // ═══════════════════════════════════════════════

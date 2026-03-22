@@ -203,12 +203,12 @@
   }
 
   .bag-pips {
-    display: flex; gap: 2px; justify-content: center; align-items: center;
+    display: flex; gap: 3px; justify-content: center; align-items: center;
     margin-top: auto;
   }
   .bag-pips .pip {
-    width: 9px; height: 11px;
-    font-size: 10px; line-height: 11px;
+    width: 12px; height: 14px;
+    font-size: 13px; line-height: 14px;
     font-family: Georgia, serif;
     text-align: center;
     color: rgba(26,22,18,0.12);
@@ -220,9 +220,9 @@
     0% { transform: scale(0.4); } 60% { transform: scale(1.25); } 100% { transform: scale(1); }
   }
   .bag-label {
-    font-size: 9px; text-transform: uppercase; letter-spacing: 0.16em;
-    color: var(--ink-soft); opacity: 0.6; margin-top: 4px; text-align: center;
-    font-variant-numeric: tabular-nums;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--ink-soft); opacity: 0.7; margin-top: 5px; text-align: center;
+    font-variant-numeric: tabular-nums; font-weight: 600;
   }
   .bag-label.warn  { color: var(--bag-warn); opacity: 0.9; font-weight: 700; }
   .bag-label.danger{ color: var(--bag-danger); opacity: 1; font-weight: 700; }
@@ -323,30 +323,45 @@
 
   /* nil control strip */
   .nil-strip {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    min-height: 24px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 30px;
   }
   .nil-check {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 0;
     font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
     color: var(--ink-soft); opacity: 0.6;
+    padding: 4px 10px;
+    border: 1.5px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 150ms;
+    user-select: none; -webkit-user-select: none;
   }
-  .nil-check input {
-    width: 16px; height: 16px; accent-color: var(--gold-dim);
-    margin: 0;
+  .nil-check input { display: none; }
+  .nil-check:active { transform: scale(0.96); }
+  .nil-check.active {
+    color: var(--ink); opacity: 1; font-weight: 700;
+    border-color: var(--gold);
+    background: rgba(201,162,39,0.08);
   }
-  .nil-check.active { color: var(--ink); opacity: 1; font-weight: 700; }
   .nil-sub {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 0;
     font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em;
-    color: var(--ink-soft); opacity: 0.5;
-    margin-top: 2px;
+    color: var(--ink-soft); opacity: 0.4;
+    padding: 4px 8px;
+    border: 1.5px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 150ms;
+    user-select: none; -webkit-user-select: none;
   }
-  .nil-sub input {
-    width: 14px; height: 14px; accent-color: var(--gold-dim);
-    margin: 0;
+  .nil-sub input { display: none; }
+  .nil-sub:active { transform: scale(0.96); }
+  .nil-sub.active {
+    opacity: 0.9; color: var(--ink); font-weight: 700;
+    border-color: var(--gold-dim);
+    background: rgba(201,162,39,0.06);
   }
-  .nil-sub.active { opacity: 0.9; color: var(--ink); font-weight: 700; }
 
   /* nil-took sub-field: slides in when nil is active */
   .niltook-field {
@@ -601,7 +616,7 @@
           <label class="nil-check" id="nilA-wrap">
             <input type="checkbox" id="nilA"> ♠ Nil
           </label>
-          <label class="nil-sub hidden" id="blindA-wrap">
+          <label class="nil-sub" id="blindA-wrap">
             <input type="checkbox" id="blindA"> Blind
           </label>
         </div>
@@ -646,7 +661,7 @@
           <label class="nil-check" id="nilB-wrap">
             <input type="checkbox" id="nilB"> ♠ Nil
           </label>
-          <label class="nil-sub hidden" id="blindB-wrap">
+          <label class="nil-sub" id="blindB-wrap">
             <input type="checkbox" id="blindB"> Blind
           </label>
         </div>
@@ -718,7 +733,7 @@
       <table style="width:100%; border-collapse: collapse; font-size: 13px;">
         <tr style="border-bottom: 1px solid var(--gold-dim);">
           <td style="padding: 6px 4px;"><strong>Make bid</strong></td>
-          <td style="padding: 6px 4px;">bid &times; 10 + overtricks</td>
+          <td style="padding: 6px 4px;">bid &times; 10 (overtricks &rarr; bags only)</td>
         </tr>
         <tr style="border-bottom: 1px solid var(--gold-dim);">
           <td style="padding: 6px 4px;"><strong>Set (miss bid)</strong></td>
@@ -860,11 +875,11 @@
     return scoreContract(bid, tricks);
   }
 
-  /** Standard contract: make = bid×10 + overtricks, set = −bid×10. */
+  /** Standard contract: make = bid×10, set = −bid×10. Overtricks tracked as bags only. */
   function scoreContract(bid, tricks) {
     if (tricks >= bid) {
       const over = tricks - bid;
-      return { delta: bid * 10 + over, bagsGained: over, note: '' };
+      return { delta: bid * 10, bagsGained: over, note: '' };
     }
     return { delta: -(bid * 10), bagsGained: 0, note: 'set' };
   }
@@ -1026,7 +1041,6 @@
     const tookField = $('nilTook' + side + '-field');
 
     nilWrap.classList.toggle('active', isNil);
-    blindWrap.classList.toggle('hidden', !isNil);
     blindWrap.classList.toggle('active', isBlind);
 
     if (isNil) {
@@ -1061,12 +1075,12 @@
         <div class="history-cell">
           <span class="bt">${describeBid(r, 'A')}${r.noteA ? ' · ' + r.noteA : ''}</span>
           <span class="delta ${r.dA >= 0 ? 'pos' : 'neg'}">${r.dA >= 0 ? '+' : ''}${r.dA}</span>
-          <span class="cum">= ${r.scoreA}${r.bagGainA ? ` · +${r.bagGainA}♠` : ''}</span>
+          <span class="cum">= ${r.scoreA}</span>
         </div>
         <div class="history-cell">
           <span class="bt">${describeBid(r, 'B')}${r.noteB ? ' · ' + r.noteB : ''}</span>
           <span class="delta ${r.dB >= 0 ? 'pos' : 'neg'}">${r.dB >= 0 ? '+' : ''}${r.dB}</span>
-          <span class="cum">= ${r.scoreB}${r.bagGainB ? ` · +${r.bagGainB}♠` : ''}</span>
+          <span class="cum">= ${r.scoreB}</span>
         </div>
       </div>`;
     }).reverse().join('');
@@ -1253,7 +1267,15 @@ modal.classList.remove('hidden'));
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      navigator.serviceWorker.register('sw.js').then((reg) => {
+        // Check for updates every 30 minutes
+        setInterval(() => reg.update(), 30 * 60 * 1000);
+        // When a new SW takes over, reload to get fresh assets
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) { refreshing = true; location.reload(); }
+        });
+      }).catch(() => {});
     });
   }
 
