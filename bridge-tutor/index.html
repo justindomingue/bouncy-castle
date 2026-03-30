@@ -1823,6 +1823,41 @@ const curriculum = [
           {
             type: "teach",
             content: `
+              <h3>Let's Walk Through an Example</h3>
+              <p>Imagine you're dealt a hand with lots of spades and good high cards. You think your team can win 8 tricks with spades as trump.</p>
+              <p>8 tricks = Level <strong>2</strong> + 6. So you bid: <span class="highlight">2♠</span></p>
+              <p style="text-align:center;font-size:1.5rem;margin:16px 0">2♠ = "We'll win 8+ tricks with spades as trump"</p>
+              <p>Think of the bid as two pieces of info packed together:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li>The <strong>number</strong> (2) tells HOW MANY tricks above 6</li>
+                <li>The <strong>suit</strong> (♠) tells WHICH suit is trump</li>
+              </ul>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>More Examples — Read Each One!</h3>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-size:1.2rem;font-weight:800">1♥</p>
+                <p>Level 1 + 6 = <span class="highlight">7 tricks</span>, with hearts as trump</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">The lowest possible bid in hearts. "We think we can win a slight majority."</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-size:1.2rem;font-weight:800">4♠</p>
+                <p>Level 4 + 6 = <span class="highlight">10 tricks</span>, with spades as trump</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">A "game" contract! You're promising to win 10 out of 13 — you need a great hand.</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-size:1.2rem;font-weight:800">3NT</p>
+                <p>Level 3 + 6 = <span class="highlight">9 tricks</span>, no trump suit</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">No suit is trump — the highest card in the suit led always wins. One of the most common game contracts!</p>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
               <h3>Why +6?</h3>
               <p>There are 13 tricks total. Getting 6 is about average (half of 13, roughly).</p>
               <p>The bid level counts the tricks <em>above</em> 6. So you're always promising to do <span class="highlight">better than average</span>.</p>
@@ -1913,6 +1948,42 @@ const curriculum = [
                 <div class="bid-chip pass">Pass</div>
               </div>
               <p>The final contract is <strong>2♠</strong>. The team that bid spades must win 8 tricks.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Full Auction: Step by Step</h3>
+              <p>Let's watch a complete auction unfold. The dealer is South.</p>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p><strong>South (dealer):</strong> Has 13 HCP and 5 hearts. Opens <span class="highlight">1♥</span></p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">"I have a decent hand with hearts."</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p><strong>West:</strong> Has 8 HCP. Says <span class="highlight">Pass</span></p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">"Not enough to bid."</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p><strong>North:</strong> Has 12 HCP and 4 hearts! Bids <span class="highlight">4♥</span></p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">"Partner, we have a heart fit AND enough points for game! Let's go to 4♥."</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p><strong>East:</strong> <span class="highlight">Pass</span> &rarr; <strong>South:</strong> <span class="highlight">Pass</span> &rarr; <strong>West:</strong> <span class="highlight">Pass</span></p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">Three passes in a row = auction over! Contract: 4♥ by South (10 tricks needed, hearts are trump).</p>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Why Bid Higher? A Competition!</h3>
+              <p>Sometimes BOTH teams want to play the hand. The auction is literally an <span class="highlight">auction</span> — like bidding at an art sale!</p>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p><strong>South:</strong> 1♥ &rarr; <strong>West:</strong> 1♠ &rarr; <strong>North:</strong> 2♥ &rarr; <strong>East:</strong> 2♠</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">Both teams are competing! N-S like hearts, E-W like spades. Each bid must be higher than the last.</p>
+              </div>
+              <p>North can't bid "2♥" again — that's not higher than 2♠. North would need to bid <strong>3♥</strong> (promising 9 tricks) or pass.</p>
+              <p>This competition is what makes bidding exciting — but also risky. Promise too many tricks and you might fail!</p>
             `
           },
           {
@@ -2289,6 +2360,31 @@ const curriculum = [
           {
             type: "teach",
             content: `
+              <h3>Example: Scoring 2♠</h3>
+              <p>You bid <strong>2♠</strong> and win exactly 8 tricks. Let's score it:</p>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p>Contract: 2♠ (promised 8 tricks, spades trump)</p>
+                <p>Tricks won: 8 ✓ (made it!)</p>
+                <p>Score: 2 tricks bid × 30 per spade trick = <span class="highlight">60 points</span></p>
+              </div>
+              <p>Only the tricks you <em>bid</em> count for the trick score (2 tricks, not all 8). The other 6 are the "free" ones.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Example: Scoring 1NT with Overtricks</h3>
+              <p>You bid <strong>1NT</strong> (need 7 tricks) and win 9. Nice!</p>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p>Trick score: 40 (first NT trick) = <span class="highlight">40 points</span></p>
+                <p>Overtricks: You won 2 extra tricks = +60 bonus</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">Overtricks are nice but don't count toward the "100 for game" threshold. Only bid tricks count for that.</p>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
               <h3>Game Bonus</h3>
               <p>If your trick score reaches <span class="highlight">100+</span>, you score a <span class="highlight">Game bonus</span> — a big deal!</p>
               <p>Game contracts:</p>
@@ -2298,6 +2394,45 @@ const curriculum = [
                 <li><strong>5♣ or 5♦</strong> = 5 × 20 = 100 ✓ (11 tricks)</li>
               </ul>
               <p>This is why 3NT, 4♥/4♠ are the most common game contracts — they need the fewest tricks!</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Why Does Game Matter So Much?</h3>
+              <p>The game bonus is <span class="highlight">300 points</span> (not vulnerable) or <span class="highlight">500 points</span> (vulnerable). That's huge compared to trick scores of 20-40!</p>
+              <p>This is why the entire bidding system revolves around one question:</p>
+              <p style="font-size:1.2rem;font-weight:800;color:var(--gold);text-align:center;margin:16px 0">"Can we make game?"</p>
+              <p>Example: You and partner have 25+ combined HCP. That's usually enough for game. So you push the bidding to:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li>3NT if balanced hands (only 9 tricks needed!)</li>
+                <li>4♥ or 4♠ if you have an 8-card major fit</li>
+                <li>5♣ or 5♦ only as a last resort (need 11 tricks)</li>
+              </ul>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Putting It All Together</h3>
+              <p>Here's a real scoring example:</p>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800">Contract: 4♠, Not Vulnerable</p>
+                <p>Tricks won: 11 (one overtrick)</p>
+                <p>Trick score: 4 × 30 = 120 (≥ 100, so it's game!)</p>
+                <p>Game bonus: +300</p>
+                <p>Overtrick: +30</p>
+                <p style="font-weight:800;color:var(--gold);font-size:1.1rem;margin-top:8px">Total: 450 points</p>
+              </div>
+              <p>Compare that to a part-score:</p>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800">Contract: 2♠, Not Vulnerable</p>
+                <p>Tricks won: 9 (one overtrick)</p>
+                <p>Trick score: 2 × 30 = 60 (below 100, no game bonus)</p>
+                <p>Overtrick: +30</p>
+                <p style="font-weight:800;color:var(--text-dim);font-size:1.1rem;margin-top:8px">Total: only 140 points</p>
+              </div>
+              <p>Bidding game when you can make it is worth <strong>310 extra points!</strong></p>
             `
           },
           {
@@ -2350,6 +2485,38 @@ const curriculum = [
               <p>If you don't win enough tricks, you go <span class="highlight">down</span> (or "set"). The opponents score penalty points!</p>
               <p>Each trick you fall short is an <span class="highlight">undertrick</span>.</p>
               <p>Example: You bid 4♠ (need 10 tricks) but only take 8. You're <strong>down 2</strong> — that's 2 undertricks.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Example: Going Down</h3>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800">Contract: 4♥ (need 10 tricks), Not Vulnerable</p>
+                <p>Tricks won: 8</p>
+                <p>Down 2 (fell short by 2 tricks)</p>
+                <p>Penalty: 2 × 50 = <span style="color:var(--red);font-weight:800">-100 points to you</span></p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">Your opponents get 100 points. You get nothing for the 8 tricks you did win.</p>
+              </div>
+              <p>Key insight: when you go down, you score <strong>zero</strong> for your tricks. The opponents just get the penalty.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>The Risk-Reward Tradeoff</h3>
+              <p>Should you bid game? Let's compare:</p>
+              <div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap">
+                <div style="flex:1;min-width:140px;background:rgba(88,204,2,0.1);border:2px solid var(--green);border-radius:12px;padding:14px">
+                  <p style="font-weight:800;color:var(--green)">Bid 4♠, make it</p>
+                  <p style="font-size:1.3rem;font-weight:900;color:var(--green)">+420</p>
+                </div>
+                <div style="flex:1;min-width:140px;background:rgba(255,75,75,0.1);border:2px solid var(--red);border-radius:12px;padding:14px">
+                  <p style="font-weight:800;color:var(--red)">Bid 4♠, down 1</p>
+                  <p style="font-size:1.3rem;font-weight:900;color:var(--red)">-50</p>
+                </div>
+              </div>
+              <p>The reward for making game is SO much bigger than the penalty for going down. That's why good players bid aggressively when they think game is possible!</p>
             `
           },
           {
@@ -2757,8 +2924,7 @@ function renderPath() {
   let lessonIdx = 0;
 
   curriculum.forEach((unit, ui) => {
-    const unitLocked = ui > 0 && !isUnitUnlocked(ui);
-    const themeClass = unitLocked ? 'locked' : (unit.theme || '');
+    const themeClass = unit.theme || '';
 
     html += `<div class="unit-header ${themeClass}">
       <div class="unit-label">Unit ${ui + 1}</div>
@@ -2770,14 +2936,11 @@ function renderPath() {
     unit.lessons.forEach((lesson, li) => {
       const lid = `${ui}-${li}`;
       const completed = state.completedLessons.includes(lid);
-      const available = !unitLocked && (li === 0 || state.completedLessons.includes(`${ui}-${li-1}`));
-      const locked = !completed && !available;
-
-      let cls = completed ? 'completed' : (available ? 'available' : 'locked');
-      let icon = completed ? '✓' : (locked ? '🔒' : (li + 1));
+      let cls = completed ? 'completed' : 'available';
+      let icon = completed ? '✓' : (li + 1);
       let crown = completed ? '<span class="node-crown">👑</span>' : '';
 
-      html += `<div class="lesson-node ${cls}" onclick="${locked ? '' : `startLesson(${ui},${li})`}" title="${lesson.title}">
+      html += `<div class="lesson-node ${cls}" onclick="startLesson(${ui},${li})" title="${lesson.title}">
         ${crown}
         ${icon}
       </div>`;
@@ -2789,12 +2952,6 @@ function renderPath() {
   container.innerHTML = html;
 }
 
-function isUnitUnlocked(unitIdx) {
-  if (unitIdx === 0) return true;
-  const prevUnit = curriculum[unitIdx - 1];
-  const lastLesson = `${unitIdx - 1}-${prevUnit.lessons.length - 1}`;
-  return state.completedLessons.includes(lastLesson);
-}
 
 // ===========================
 // LESSON ENGINE
