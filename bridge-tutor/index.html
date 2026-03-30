@@ -2154,6 +2154,66 @@ const curriculum = [
             `
           },
           {
+            type: "teach",
+            content: `
+              <h3>Practice: Count These Hands</h3>
+              <p>Try counting each one before reading the answer!</p>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;margin-bottom:8px">Hand A:</p>
+                <div class="card-display" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin:8px 0">
+                  ${cardHTML('K','S')} ${cardHTML('J','S')} ${cardHTML('8','S')} ${cardHTML('4','S')}
+                  ${cardHTML('A','H')} ${cardHTML('10','H')} ${cardHTML('7','H')}
+                  ${cardHTML('Q','D')} ${cardHTML('6','D')} ${cardHTML('3','D')}
+                  ${cardHTML('J','C')} ${cardHTML('9','C')} ${cardHTML('2','C')}
+                </div>
+                <p>K♠(3) + J♠(1) + A♥(4) + Q♦(2) + J♣(1) = <span class="highlight">11 HCP</span></p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">Just below opening strength. You'd probably pass.</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;margin-bottom:8px">Hand B:</p>
+                <div class="card-display" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin:8px 0">
+                  ${cardHTML('A','S')} ${cardHTML('K','S')} ${cardHTML('Q','S')} ${cardHTML('J','S')} ${cardHTML('10','S')}
+                  ${cardHTML('A','H')} ${cardHTML('K','H')}
+                  ${cardHTML('A','D')} ${cardHTML('5','D')}
+                  ${cardHTML('Q','C')} ${cardHTML('8','C')} ${cardHTML('6','C')} ${cardHTML('3','C')}
+                </div>
+                <p>A♠(4) + K♠(3) + Q♠(2) + J♠(1) + A♥(4) + K♥(3) + A♦(4) + Q♣(2) = <span class="highlight">23 HCP</span></p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">A monster hand! This alone is almost enough for game.</p>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Hand Shape Matters Too</h3>
+              <p>HCP isn't the whole story. The <span class="highlight">shape</span> of your hand (how cards are distributed across suits) also matters.</p>
+              <p>Compare these two 12-HCP hands:</p>
+              <div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap">
+                <div style="flex:1;min-width:140px;background:var(--bg-light);border-radius:12px;padding:14px">
+                  <p style="font-weight:800;color:var(--text-dim);font-size:0.8rem">FLAT (4-3-3-3)</p>
+                  <p>♠ K Q 7 4</p>
+                  <p>♥ J 8 3</p>
+                  <p>♦ A 9 5</p>
+                  <p>♣ Q 6 2</p>
+                  <p style="font-size:0.85rem;color:var(--text-dim);margin-top:8px">Balanced but boring. Good for NT.</p>
+                </div>
+                <div style="flex:1;min-width:140px;background:var(--bg-light);border-radius:12px;padding:14px">
+                  <p style="font-weight:800;color:var(--gold);font-size:0.8rem">SHAPELY (6-4-2-1)</p>
+                  <p>♠ A Q J 9 7 5</p>
+                  <p>♥ K J 8 3</p>
+                  <p>♦ 6 2</p>
+                  <p>♣ 4</p>
+                  <p style="font-size:0.85rem;color:var(--text-dim);margin-top:8px">Same HCP but much more powerful with spades as trump!</p>
+                </div>
+              </div>
+              <p>Long suits and short suits (voids, singletons) are <span class="highlight">extra valuable</span> in trump contracts because you can ruff losers.</p>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">Some players add "distribution points": void = 3, singleton = 2, doubleton = 1. These only count when you've found a trump fit!</span>
+              </div>
+            `
+          },
+          {
             type: "mc",
             prompt: "How many HCP is a King worth?",
             choices: ["1 point", "2 points", "3 points", "4 points"],
@@ -2227,6 +2287,37 @@ const curriculum = [
             `
           },
           {
+            type: "teach",
+            content: `
+              <h3>Opening Bid Examples</h3>
+              <p>Let's look at real hands and decide what to open.</p>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;margin-bottom:4px">Hand 1: 15 HCP</p>
+                <p>♠ A 8 3 &nbsp; ♥ K Q 5 &nbsp; ♦ A J 7 2 &nbsp; ♣ Q 9 4</p>
+                <p style="color:var(--green);font-weight:700;margin-top:6px">Open 1NT</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">15 HCP, balanced (4-3-3-3). Perfect 1NT opening.</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;margin-bottom:4px">Hand 2: 13 HCP</p>
+                <p>♠ K Q J 8 5 &nbsp; ♥ A 4 &nbsp; ♦ 9 7 3 &nbsp; ♣ K 6 2</p>
+                <p style="color:var(--green);font-weight:700;margin-top:6px">Open 1♠</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">13 HCP with 5 spades. Always show a 5-card major!</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;margin-bottom:4px">Hand 3: 14 HCP</p>
+                <p>♠ A 7 &nbsp; ♥ K 5 3 &nbsp; ♦ Q 9 &nbsp; ♣ A J 8 6 4</p>
+                <p style="color:var(--green);font-weight:700;margin-top:6px">Open 1♣</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">14 HCP, no 5-card major, not balanced enough for 1NT (only 2 diamonds). Open your longest minor.</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;margin-bottom:4px">Hand 4: 9 HCP</p>
+                <p>♠ J 8 5 &nbsp; ♥ Q 7 3 &nbsp; ♦ K 9 6 2 &nbsp; ♣ J 4 3</p>
+                <p style="color:var(--red);font-weight:700;margin-top:6px">Pass</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">Only 9 HCP — not enough to open. Wait for partner.</p>
+              </div>
+            `
+          },
+          {
             type: "mc",
             prompt: "You have 14 HCP and 5 spades. What should you open?",
             choices: ["Pass", "1♠", "1NT", "2♠"],
@@ -2297,6 +2388,63 @@ const curriculum = [
                 <span class="tip-icon">💡</span>
                 <span class="tip-text">An 8-card fit (5 + 3 or 4 + 4) in a major suit is the golden goal of bidding!</span>
               </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Responding: Full Examples</h3>
+              <p>Partner opens <strong>1♥</strong> (showing 12+ HCP and 5+ hearts). What do you do?</p>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;margin-bottom:4px">Your hand: 7 HCP, 3 hearts</p>
+                <p>♠ Q 8 5 &nbsp; ♥ K 9 3 &nbsp; ♦ J 7 4 2 &nbsp; ♣ 8 6 3</p>
+                <p style="color:var(--green);font-weight:700;margin-top:6px">Bid 2♥ (single raise)</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">You have a fit (3 hearts) and 6-9 HCP. A simple raise says "I support you, but I'm minimum."</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;margin-bottom:4px">Your hand: 11 HCP, 4 hearts</p>
+                <p>♠ A 7 &nbsp; ♥ Q J 8 4 &nbsp; ♦ K 9 5 &nbsp; ♣ J 7 6 2</p>
+                <p style="color:var(--green);font-weight:700;margin-top:6px">Bid 3♥ (jump raise)</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">Great fit and 10-12 HCP. The jump says "I have a good hand — game is close!"</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;margin-bottom:4px">Your hand: 14 HCP, 3 hearts</p>
+                <p>♠ K Q 5 &nbsp; ♥ A 8 3 &nbsp; ♦ K J 7 &nbsp; ♣ Q 9 6 4</p>
+                <p style="color:var(--green);font-weight:700;margin-top:6px">Bid 4♥ (game!)</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">Partner has 12+ and you have 14 = at least 26 together. Jump straight to game!</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;margin-bottom:4px">Your hand: 10 HCP, 1 heart but 5 spades</p>
+                <p>♠ A Q 9 7 5 &nbsp; ♥ 4 &nbsp; ♦ K J 8 &nbsp; ♣ 9 7 5 3</p>
+                <p style="color:var(--green);font-weight:700;margin-top:6px">Bid 1♠ (new suit)</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">No heart fit, but you can show your own suit! Maybe partner has spades too.</p>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>The Partnership Conversation</h3>
+              <p>Bidding is like a conversation. Here's how it flows:</p>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;color:var(--blue);margin-bottom:6px">A Real Bidding Dialogue</p>
+                <p><strong>You (South):</strong> 1♥</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">"I have 12+ HCP and 5+ hearts."</p>
+                <p style="margin-top:8px"><strong>Partner (North):</strong> 2♥</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">"I have 6-9 HCP and 3+ hearts. We have a fit!"</p>
+                <p style="margin-top:8px"><strong>You:</strong> Pass</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">"I only have 13 HCP. Combined 13 + ~8 = ~21. Not enough for game (25). Let's stop here."</p>
+              </div>
+              <div style="background:var(--bg-light);border-radius:12px;padding:16px;margin:10px 0">
+                <p style="font-weight:800;color:var(--gold);margin-bottom:6px">Another Dialogue (stronger hand)</p>
+                <p><strong>You (South):</strong> 1♥</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">"I have 12+ HCP and 5+ hearts."</p>
+                <p style="margin-top:8px"><strong>Partner (North):</strong> 3♥</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">"I have 10-12 HCP and 4 hearts. We're close to game!"</p>
+                <p style="margin-top:8px"><strong>You:</strong> 4♥</p>
+                <p style="font-size:0.85rem;color:var(--text-dim)">"I have 15 HCP. Combined 15 + ~11 = 26. Game!"</p>
+              </div>
+              <p>See how each bid exchanges information? That's the beauty of bridge bidding.</p>
             `
           },
           {
