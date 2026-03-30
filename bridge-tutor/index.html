@@ -919,6 +919,456 @@ body {
   line-height: 1.5;
   margin-bottom: 4px;
 }
+/* ===== BOTTOM TAB BAR ===== */
+.bottom-tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-light);
+  border-top: 2px solid var(--bg-card);
+  display: flex;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 0 8px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tab-btn .tab-icon { font-size: 1.4rem; }
+.tab-btn.active { color: var(--green); }
+.tab-btn:hover { color: var(--text); }
+
+/* ===== SIMULATOR ===== */
+.sim-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px 16px 100px;
+}
+
+.sim-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.sim-header h2 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.sim-header p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+.sim-mode-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.sim-mode-card {
+  background: var(--bg-card);
+  border: 2px solid #3a4a55;
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sim-mode-card:hover { border-color: var(--blue); transform: scale(1.01); }
+
+.sim-mode-icon { font-size: 2.2rem; flex-shrink: 0; }
+
+.sim-mode-info h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.sim-mode-info p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.sim-mode-card.locked-mode {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sim-mode-card.locked-mode:hover { border-color: #3a4a55; transform: none; }
+
+/* Sim game area */
+.sim-game {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 140px);
+}
+
+.sim-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sim-back {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.sim-info {
+  text-align: center;
+  flex: 1;
+}
+
+.sim-info .contract-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.sim-info .contract-value {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--gold);
+}
+
+.sim-tricks-display {
+  display: flex;
+  gap: 16px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.tricks-us { color: var(--green); }
+.tricks-them { color: var(--red); }
+
+/* Green felt table */
+.sim-table {
+  background: radial-gradient(ellipse at center, #1e7a3a, #145a28 70%, #0f4420);
+  border-radius: 24px;
+  border: 4px solid #2a8c4a;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  box-shadow: inset 0 2px 20px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.sim-table-grid {
+  display: grid;
+  grid-template-columns: 80px 1fr 80px;
+  grid-template-rows: auto auto auto;
+  gap: 4px;
+  align-items: center;
+  justify-items: center;
+  min-height: 220px;
+}
+
+.sim-seat {
+  text-align: center;
+}
+
+.sim-seat-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+.sim-seat-label.active-turn {
+  color: var(--gold);
+  opacity: 1;
+}
+
+.sim-seat-label.declarer-label { color: var(--green); }
+.sim-seat-label.dummy-label { color: var(--blue); }
+.sim-seat-label.defender-label { color: var(--red); }
+
+.sim-played-card {
+  width: 50px;
+  height: 70px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  margin: 0 auto;
+  animation: dealCard 0.3s ease;
+}
+
+.sim-played-card.red { color: var(--suit-red); }
+.sim-played-card.black { color: var(--suit-black); }
+.sim-played-card .card-rank { font-size: 1rem; line-height: 1; }
+.sim-played-card .card-suit { font-size: 1.2rem; line-height: 1; }
+
+.sim-empty-slot {
+  width: 50px;
+  height: 70px;
+  border: 2px dashed rgba(255,255,255,0.2);
+  border-radius: 8px;
+  margin: 0 auto;
+}
+
+.sim-seat.north { grid-column: 2; grid-row: 1; }
+.sim-seat.west { grid-column: 1; grid-row: 2; }
+.sim-seat.center-area { grid-column: 2; grid-row: 2; }
+.sim-seat.east { grid-column: 3; grid-row: 2; }
+.sim-seat.south { grid-column: 2; grid-row: 3; }
+
+@keyframes dealCard {
+  from { transform: scale(0.5) translateY(-20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Dummy hand (visible, face up, at top) */
+.sim-dummy-hand {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.sim-dummy-hand .hand-card {
+  width: 44px;
+  height: 62px;
+  font-size: 0.8rem;
+}
+
+.sim-dummy-hand .hand-card .card-rank { font-size: 0.9rem; }
+.sim-dummy-hand .hand-card .card-suit { font-size: 1rem; }
+
+.sim-dummy-hand .hand-card.playable {
+  border-color: var(--gold);
+  cursor: pointer;
+}
+
+.sim-dummy-hand .hand-card.playable:hover {
+  transform: translateY(-6px);
+  border-color: var(--blue);
+}
+
+.sim-dummy-hand .hand-card:not(.playable) {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Player hand at bottom */
+.sim-player-hand {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 12px 0;
+}
+
+.sim-player-hand .hand-card {
+  width: 52px;
+  height: 72px;
+}
+
+.sim-player-hand .hand-card.playable {
+  border-color: #aaa;
+  cursor: pointer;
+}
+
+.sim-player-hand .hand-card.playable:hover {
+  transform: translateY(-10px);
+  border-color: var(--gold);
+}
+
+.sim-player-hand .hand-card:not(.playable) {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Coach tip */
+.sim-coach {
+  background: rgba(28, 176, 246, 0.1);
+  border: 2px solid var(--blue);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  animation: slideUp 0.3s ease;
+}
+
+.sim-coach-icon { font-size: 1.3rem; flex-shrink: 0; }
+.sim-coach-text { font-size: 0.9rem; line-height: 1.5; }
+
+/* Trick winner announcement */
+.trick-result {
+  text-align: center;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  animation: slideUp 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.trick-result.won {
+  background: var(--correct-bg);
+  border: 2px solid var(--green);
+  color: var(--green);
+}
+
+.trick-result.lost {
+  background: var(--wrong-bg);
+  border: 2px solid var(--red);
+  color: var(--red);
+}
+
+/* Sim complete overlay */
+.sim-result {
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.sim-result-icon { font-size: 3.5rem; margin-bottom: 12px; }
+
+.sim-result h2 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.sim-result .result-subtitle {
+  color: var(--text-dim);
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+.sim-result-stats {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-bottom: 28px;
+}
+
+.sim-result-stat {
+  text-align: center;
+}
+
+.sim-result-stat .val {
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.sim-result-stat .label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.sim-btn {
+  padding: 14px 32px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  background: var(--green);
+  color: white;
+  box-shadow: 0 4px 0 var(--green-dark);
+  margin: 6px;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+
+.sim-btn:active {
+  box-shadow: 0 2px 0 var(--green-dark);
+  transform: translateY(2px);
+}
+
+.sim-btn.secondary {
+  background: var(--bg-card);
+  box-shadow: 0 4px 0 #1a2530;
+  color: var(--text);
+}
+
+/* Scenario selector */
+.scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scenario-card {
+  background: var(--bg-card);
+  border: 2px solid #3a4a55;
+  border-radius: 14px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.scenario-card:hover { border-color: var(--green); }
+
+.scenario-card .sc-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scenario-card .sc-num {
+  width: 36px;
+  height: 36px;
+  background: var(--green);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.scenario-card.completed .sc-num { background: var(--gold); }
+
+.scenario-card .sc-info h4 { font-size: 0.95rem; font-weight: 800; }
+.scenario-card .sc-info p { font-size: 0.8rem; color: var(--text-dim); }
+.scenario-card .sc-arrow { color: var(--text-dim); font-size: 1.2rem; }
+
+/* Hide bottom tabs when in lesson or sim game */
+body.hide-tabs .bottom-tabs { display: none; }
 </style>
 </head>
 <body>
@@ -995,6 +1445,23 @@ body {
   </div>
 </div>
 
+<!-- SIMULATOR SCREEN -->
+<div id="simScreen" class="screen">
+  <div class="sim-container" id="simContainer"></div>
+</div>
+
+<!-- BOTTOM TAB BAR -->
+<div class="bottom-tabs" id="bottomTabs">
+  <button class="tab-btn active" onclick="switchTab('home')" id="tabHome">
+    <span class="tab-icon">📚</span>
+    Learn
+  </button>
+  <button class="tab-btn" onclick="switchTab('sim')" id="tabSim">
+    <span class="tab-icon">🃏</span>
+    Play
+  </button>
+</div>
+
 <script>
 // ===========================
 // STATE
@@ -1032,6 +1499,7 @@ function saveState() {
       hearts: state.hearts,
       streak: state.streak,
       completedLessons: state.completedLessons,
+      completedScenarios: state.completedScenarios || [],
     }));
   } catch(e) {}
 }
@@ -2532,6 +3000,25 @@ function exitLesson() {
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(name + 'Screen').classList.add('active');
+  // Hide tabs during lessons/complete
+  if (name === 'lesson' || name === 'complete') {
+    document.body.classList.add('hide-tabs');
+  } else {
+    document.body.classList.remove('hide-tabs');
+  }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (tab === 'home') {
+    document.getElementById('tabHome').classList.add('active');
+    showScreen('home');
+    renderPath();
+  } else if (tab === 'sim') {
+    document.getElementById('tabSim').classList.add('active');
+    showScreen('sim');
+    renderSimMenu();
+  }
 }
 
 function updateNav() {
@@ -2541,9 +3028,587 @@ function updateNav() {
 }
 
 // ===========================
+// SIMULATOR ENGINE
+// ===========================
+const RANK_ORDER = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const RANK_VAL = {};
+RANK_ORDER.forEach((r, i) => RANK_VAL[r] = i);
+
+const SUIT_NAMES = { S: 'Spades', H: 'Hearts', D: 'Diamonds', C: 'Clubs' };
+const SEATS = ['N', 'E', 'S', 'W'];
+const SEAT_NAMES = { N: 'North', E: 'East', S: 'South', W: 'West' };
+
+let sim = {
+  mode: null,        // 'scenario' or 'random'
+  scenarioIdx: null,
+  hands: { N: [], E: [], S: [], W: [] },
+  trump: null,       // 'S','H','D','C' or null for NT
+  contract: '',
+  declarer: 'S',
+  dummy: 'N',
+  currentTrick: [],  // [{seat, rank, suit}]
+  leader: 'W',       // who leads this trick
+  turn: 'W',
+  tricksNS: 0,
+  tricksEW: 0,
+  trickNum: 0,
+  target: 0,         // tricks declarer needs
+  phase: 'play',     // 'play', 'trickDone', 'done'
+  coachMsg: '',
+  trickResult: null,  // {won: bool, msg: ''}
+  playedCards: [],    // history
+};
+
+// ----- SCENARIOS -----
+const scenarios = [
+  {
+    title: "Your First Trick",
+    desc: "Win a trick with the Ace",
+    contract: "1NT", trump: null, target: 7, declarer: 'S',
+    hands: {
+      S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'5',s:'H'},{r:'A',s:'D'},{r:'8',s:'D'},{r:'4',s:'D'},{r:'K',s:'C'},{r:'7',s:'C'},{r:'3',s:'C'},{r:'2',s:'C'}],
+      N: [{r:'J',s:'S'},{r:'10',s:'S'},{r:'5',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'A',s:'C'},{r:'Q',s:'C'},{r:'6',s:'C'},{r:'4',s:'C'}],
+      E: [{r:'8',s:'S'},{r:'7',s:'S'},{r:'9',s:'H'},{r:'8',s:'H'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'5',s:'D'},{r:'3',s:'D'},{r:'J',s:'C'},{r:'10',s:'C'},{r:'9',s:'C'},{r:'8',s:'C'},{r:'5',s:'C'}],
+      W: [{r:'9',s:'S'},{r:'6',s:'S'},{r:'4',s:'S'},{r:'3',s:'S'},{r:'2',s:'S'},{r:'6',s:'H'},{r:'4',s:'H'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'10',s:'D'},{r:'9',s:'D'},{r:'2',s:'D'},{r:'7',s:'H'}],
+    },
+    coach: "You have tons of high cards! Win tricks by playing your Aces and Kings. West leads first.",
+  },
+  {
+    title: "Follow Suit",
+    desc: "Practice the most important rule",
+    contract: "2♠", trump: 'S', target: 8, declarer: 'S',
+    hands: {
+      S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'10',s:'S'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'A',s:'D'},{r:'K',s:'D'},{r:'5',s:'D'},{r:'4',s:'D'},{r:'3',s:'C'},{r:'2',s:'C'}],
+      N: [{r:'9',s:'S'},{r:'8',s:'S'},{r:'7',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'}],
+      E: [{r:'6',s:'S'},{r:'5',s:'S'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'9',s:'H'},{r:'8',s:'D'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'10',s:'C'},{r:'9',s:'C'},{r:'8',s:'C'},{r:'7',s:'C'},{r:'6',s:'C'}],
+      W: [{r:'4',s:'S'},{r:'3',s:'S'},{r:'2',s:'S'},{r:'8',s:'H'},{r:'7',s:'H'},{r:'6',s:'H'},{r:'5',s:'H'},{r:'4',s:'H'},{r:'9',s:'D'},{r:'3',s:'D'},{r:'2',s:'D'},{r:'5',s:'C'},{r:'4',s:'C'}],
+    },
+    coach: "Spades are trump! Remember: you MUST follow suit if you can. With this hand, draw their trumps first, then cash your winners.",
+  },
+  {
+    title: "Use Your Trumps",
+    desc: "Trump the opponents' winners",
+    contract: "4♥", trump: 'H', target: 10, declarer: 'S',
+    hands: {
+      S: [{r:'A',s:'H'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'9',s:'H'},{r:'A',s:'S'},{r:'2',s:'S'},{r:'A',s:'D'},{r:'2',s:'D'},{r:'8',s:'C'},{r:'4',s:'C'},{r:'2',s:'C'}],
+      N: [{r:'8',s:'H'},{r:'7',s:'H'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'}],
+      E: [{r:'6',s:'H'},{r:'5',s:'S'},{r:'4',s:'S'},{r:'3',s:'S'},{r:'9',s:'D'},{r:'8',s:'D'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'10',s:'C'},{r:'9',s:'C'},{r:'7',s:'C'},{r:'6',s:'C'},{r:'5',s:'C'}],
+      W: [{r:'5',s:'H'},{r:'4',s:'H'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'10',s:'S'},{r:'9',s:'S'},{r:'8',s:'S'},{r:'7',s:'S'},{r:'6',s:'S'},{r:'5',s:'D'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'3',s:'C'}],
+    },
+    coach: "Hearts are trump. You have 8 trumps between your hand and dummy! Draw their trumps, then enjoy your winners.",
+  },
+  {
+    title: "The Finesse",
+    desc: "Try to trap the opponent's King",
+    contract: "3NT", trump: null, target: 9, declarer: 'S',
+    hands: {
+      S: [{r:'A',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'10',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'5',s:'H'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'2',s:'D'},{r:'A',s:'C'},{r:'4',s:'C'},{r:'3',s:'C'}],
+      N: [{r:'5',s:'S'},{r:'4',s:'S'},{r:'3',s:'S'},{r:'2',s:'S'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'A',s:'D'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'2',s:'C'}],
+      E: [{r:'K',s:'S'},{r:'9',s:'S'},{r:'8',s:'S'},{r:'9',s:'H'},{r:'8',s:'H'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'9',s:'D'},{r:'J',s:'C'},{r:'10',s:'C'},{r:'9',s:'C'},{r:'8',s:'C'},{r:'7',s:'C'}],
+      W: [{r:'7',s:'S'},{r:'6',s:'S'},{r:'7',s:'H'},{r:'6',s:'H'},{r:'4',s:'H'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'8',s:'D'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'5',s:'D'},{r:'6',s:'C'},{r:'5',s:'C'}],
+    },
+    coach: "You have AQJ10 of spades but East has the King! Lead a small spade from dummy toward your AQ. If East plays low, try the Queen (finesse).",
+  },
+  {
+    title: "Count Your Winners",
+    desc: "Plan before you play",
+    contract: "3NT", trump: null, target: 9, declarer: 'S',
+    hands: {
+      S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'3',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'8',s:'D'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'5',s:'C'},{r:'4',s:'C'},{r:'3',s:'C'},{r:'2',s:'C'}],
+      N: [{r:'Q',s:'S'},{r:'J',s:'S'},{r:'10',s:'S'},{r:'4',s:'H'},{r:'3',s:'H'},{r:'A',s:'D'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'}],
+      E: [{r:'8',s:'S'},{r:'7',s:'S'},{r:'6',s:'S'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'9',s:'H'},{r:'5',s:'D'},{r:'4',s:'D'},{r:'J',s:'C'},{r:'10',s:'C'},{r:'9',s:'C'},{r:'8',s:'C'},{r:'7',s:'C'}],
+      W: [{r:'9',s:'S'},{r:'5',s:'S'},{r:'4',s:'S'},{r:'2',s:'S'},{r:'8',s:'H'},{r:'7',s:'H'},{r:'6',s:'H'},{r:'5',s:'H'},{r:'2',s:'H'},{r:'9',s:'D'},{r:'3',s:'D'},{r:'2',s:'D'},{r:'6',s:'C'}],
+    },
+    coach: "Stop! Count your winners: Spades (AKQ J10=5), Hearts (AKQ=3), Diamonds (AKQJ10=5), Clubs (AKQ=3). You have way more than 9! Just cash your top cards.",
+  },
+];
+
+function renderSimMenu() {
+  const c = document.getElementById('simContainer');
+  c.innerHTML = `
+    <div class="sim-header">
+      <h2>Practice Room</h2>
+      <p>Play cards and master the game</p>
+    </div>
+    <div class="sim-mode-cards">
+      <div class="sim-mode-card" onclick="showScenarioList()">
+        <div class="sim-mode-icon">🎯</div>
+        <div class="sim-mode-info">
+          <h3>Guided Scenarios</h3>
+          <p>Pre-built hands with coaching tips. Perfect for practicing specific skills.</p>
+        </div>
+      </div>
+      <div class="sim-mode-card" onclick="startRandomDeal()">
+        <div class="sim-mode-icon">🎲</div>
+        <div class="sim-mode-info">
+          <h3>Random Deal</h3>
+          <p>Play a randomly dealt hand as declarer. Full 13-trick game!</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showScenarioList() {
+  const c = document.getElementById('simContainer');
+  let html = `
+    <div class="sim-top-bar">
+      <button class="sim-back" onclick="renderSimMenu()">&larr;</button>
+      <div class="sim-info"><div class="contract-value">Guided Scenarios</div></div>
+      <div></div>
+    </div>
+    <div class="scenario-list">
+  `;
+  scenarios.forEach((sc, i) => {
+    const done = (state.completedScenarios || []).includes(i);
+    html += `
+      <div class="scenario-card ${done ? 'completed' : ''}" onclick="startScenario(${i})">
+        <div class="sc-left">
+          <div class="sc-num">${done ? '✓' : (i + 1)}</div>
+          <div class="sc-info">
+            <h4>${sc.title}</h4>
+            <p>${sc.desc} &bull; ${sc.contract}</p>
+          </div>
+        </div>
+        <div class="sc-arrow">&#8250;</div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  c.innerHTML = html;
+}
+
+function startScenario(idx) {
+  const sc = scenarios[idx];
+  sim.mode = 'scenario';
+  sim.scenarioIdx = idx;
+  sim.hands = {
+    N: sc.hands.N.map(c => ({...c})),
+    E: sc.hands.E.map(c => ({...c})),
+    S: sc.hands.S.map(c => ({...c})),
+    W: sc.hands.W.map(c => ({...c})),
+  };
+  sim.trump = sc.trump;
+  sim.contract = sc.contract;
+  sim.declarer = sc.declarer || 'S';
+  sim.dummy = sim.declarer === 'S' ? 'N' : (sim.declarer === 'N' ? 'S' : (sim.declarer === 'E' ? 'W' : 'E'));
+  sim.target = sc.target;
+  sim.currentTrick = [];
+  sim.leader = nextSeat(sim.declarer); // left of declarer
+  sim.turn = sim.leader;
+  sim.tricksNS = 0;
+  sim.tricksEW = 0;
+  sim.trickNum = 1;
+  sim.phase = 'play';
+  sim.coachMsg = sc.coach || '';
+  sim.trickResult = null;
+
+  sortAllHands();
+  renderSimGame();
+
+  // If AI leads first, play it
+  setTimeout(() => maybeAIPlay(), 400);
+}
+
+function startRandomDeal() {
+  sim.mode = 'random';
+  sim.scenarioIdx = null;
+
+  // Build and shuffle a deck
+  const deck = [];
+  ['S','H','D','C'].forEach(s => {
+    RANK_ORDER.forEach(r => deck.push({r, s}));
+  });
+  shuffle(deck);
+
+  sim.hands = { N: [], E: [], S: [], W: [] };
+  const seats = ['N','E','S','W'];
+  deck.forEach((c, i) => sim.hands[seats[i % 4]].push(c));
+
+  // Pick a random contract
+  const trumpOptions = ['S','H','D','C',null];
+  sim.trump = trumpOptions[Math.floor(Math.random() * trumpOptions.length)];
+  const level = sim.trump ? (Math.random() < 0.5 ? 2 : 3) : 3;
+  sim.target = level + 6;
+  const trumpLabel = sim.trump ? SUITS[sim.trump] : 'NT';
+  sim.contract = `${level}${trumpLabel}`;
+  sim.declarer = 'S';
+  sim.dummy = 'N';
+  sim.currentTrick = [];
+  sim.leader = 'W';
+  sim.turn = 'W';
+  sim.tricksNS = 0;
+  sim.tricksEW = 0;
+  sim.trickNum = 1;
+  sim.phase = 'play';
+  sim.coachMsg = `Random deal! Your contract is ${sim.contract}. You need ${sim.target} tricks. Plan your play!`;
+  sim.trickResult = null;
+
+  sortAllHands();
+  renderSimGame();
+  setTimeout(() => maybeAIPlay(), 400);
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function sortAllHands() {
+  const suitOrder = { S: 0, H: 1, D: 2, C: 3 };
+  Object.keys(sim.hands).forEach(seat => {
+    sim.hands[seat].sort((a, b) => {
+      if (suitOrder[a.s] !== suitOrder[b.s]) return suitOrder[a.s] - suitOrder[b.s];
+      return RANK_VAL[b.r] - RANK_VAL[a.r]; // high to low within suit
+    });
+  });
+}
+
+function nextSeat(seat) {
+  return SEATS[(SEATS.indexOf(seat) + 1) % 4];
+}
+
+function isPlayerControlled(seat) {
+  return seat === 'S' || seat === sim.dummy;
+}
+
+function suitOfLed() {
+  return sim.currentTrick.length > 0 ? sim.currentTrick[0].suit : null;
+}
+
+function canPlayCard(seat, card) {
+  if (sim.phase !== 'play') return false;
+  if (sim.turn !== seat) return false;
+  const ledSuit = suitOfLed();
+  if (!ledSuit) return true; // leading, can play anything
+  // Must follow suit if possible
+  const hasSuit = sim.hands[seat].some(c => c.s === ledSuit);
+  if (hasSuit) return card.s === ledSuit;
+  return true; // void in suit, can play anything
+}
+
+function getPlayableCards(seat) {
+  return sim.hands[seat].filter(c => canPlayCard(seat, c));
+}
+
+function playCard(seat, card) {
+  // Remove from hand
+  const idx = sim.hands[seat].findIndex(c => c.r === card.r && c.s === card.s);
+  if (idx === -1) return;
+  sim.hands[seat].splice(idx, 1);
+
+  sim.currentTrick.push({ seat, rank: card.r, suit: card.s });
+
+  if (sim.currentTrick.length < 4) {
+    sim.turn = nextSeat(sim.turn);
+    renderSimGame();
+    setTimeout(() => maybeAIPlay(), 500);
+  } else {
+    // Trick complete
+    const winner = trickWinner();
+    const wonByNS = winner === 'N' || winner === 'S';
+    if (wonByNS) sim.tricksNS++; else sim.tricksEW++;
+
+    sim.phase = 'trickDone';
+    sim.trickResult = {
+      won: wonByNS,
+      msg: `${SEAT_NAMES[winner]} wins the trick!`,
+    };
+    renderSimGame();
+
+    setTimeout(() => {
+      sim.currentTrick = [];
+      sim.trickResult = null;
+      sim.trickNum++;
+
+      if (sim.trickNum > 13 || sim.hands.S.length === 0) {
+        sim.phase = 'done';
+        renderSimResult();
+      } else {
+        sim.leader = winner;
+        sim.turn = winner;
+        sim.phase = 'play';
+        sim.coachMsg = '';
+        renderSimGame();
+        setTimeout(() => maybeAIPlay(), 400);
+      }
+    }, 1200);
+  }
+}
+
+function trickWinner() {
+  const ledSuit = sim.currentTrick[0].suit;
+  let best = sim.currentTrick[0];
+
+  for (let i = 1; i < sim.currentTrick.length; i++) {
+    const card = sim.currentTrick[i];
+    if (sim.trump && card.suit === sim.trump && best.suit !== sim.trump) {
+      best = card;
+    } else if (card.suit === best.suit && RANK_VAL[card.rank] > RANK_VAL[best.rank]) {
+      best = card;
+    }
+  }
+  return best.seat;
+}
+
+// AI plays for E/W (and also for dummy/south when it's the AI's turn — but player controls S and dummy)
+function maybeAIPlay() {
+  if (sim.phase !== 'play') return;
+  if (isPlayerControlled(sim.turn)) return;
+
+  const playable = getPlayableCards(sim.turn);
+  if (playable.length === 0) return;
+
+  // Simple AI: play lowest legal card, but play highest if trying to win
+  let pick;
+  const ledSuit = suitOfLed();
+
+  if (!ledSuit) {
+    // Leading: pick a suit, play low from longest suit
+    const suitCounts = {};
+    sim.hands[sim.turn].forEach(c => { suitCounts[c.s] = (suitCounts[c.s] || 0) + 1; });
+    let bestSuit = playable[0].s;
+    let bestCount = 0;
+    Object.entries(suitCounts).forEach(([s, n]) => {
+      if (n > bestCount) { bestCount = n; bestSuit = s; }
+    });
+    const inSuit = playable.filter(c => c.s === bestSuit);
+    pick = inSuit[inSuit.length - 1]; // lowest in suit
+  } else {
+    // Following: try to win if possible
+    const currentBest = trickCurrentBest();
+    const winners = playable.filter(c => wouldBeat(c, currentBest));
+    if (winners.length > 0) {
+      // Play cheapest winner
+      pick = winners[winners.length - 1];
+    } else {
+      // Can't win, play lowest
+      pick = playable[playable.length - 1];
+    }
+  }
+
+  playCard(sim.turn, pick);
+}
+
+function trickCurrentBest() {
+  if (sim.currentTrick.length === 0) return null;
+  let best = sim.currentTrick[0];
+  for (let i = 1; i < sim.currentTrick.length; i++) {
+    const card = sim.currentTrick[i];
+    if (sim.trump && card.suit === sim.trump && best.suit !== sim.trump) {
+      best = card;
+    } else if (card.suit === best.suit && RANK_VAL[card.rank] > RANK_VAL[best.rank]) {
+      best = card;
+    }
+  }
+  return best;
+}
+
+function wouldBeat(card, best) {
+  if (!best) return true;
+  if (sim.trump && card.suit === sim.trump && best.suit !== sim.trump) return true;
+  if (card.suit === best.suit && RANK_VAL[card.rank] > RANK_VAL[best.rank]) return true;
+  return false;
+}
+
+// ----- RENDERING -----
+function renderSimGame() {
+  const c = document.getElementById('simContainer');
+  const trumpLabel = sim.trump ? SUITS[sim.trump] : 'NT';
+
+  // Find played card for each seat in current trick
+  const played = {};
+  sim.currentTrick.forEach(p => { played[p.seat] = p; });
+
+  function seatCardHTML(seat) {
+    const p = played[seat];
+    if (p) {
+      const col = SUIT_COLORS[p.suit];
+      return `<div class="sim-played-card ${col}"><span class="card-rank">${p.rank}</span><span class="card-suit">${SUITS[p.suit]}</span></div>`;
+    }
+    return `<div class="sim-empty-slot"></div>`;
+  }
+
+  function seatLabel(seat) {
+    let label = SEAT_NAMES[seat];
+    let cls = '';
+    if (seat === sim.declarer) { label += ' (You)'; cls = 'declarer-label'; }
+    else if (seat === sim.dummy) { label += ' (Dummy)'; cls = 'dummy-label'; }
+    else { cls = 'defender-label'; }
+    if (sim.turn === seat && sim.phase === 'play') cls += ' active-turn';
+    return `<div class="sim-seat-label ${cls}">${label}${sim.turn === seat && sim.phase === 'play' ? ' ◄' : ''}</div>`;
+  }
+
+  // Dummy hand (N)
+  const dummyHand = sim.hands[sim.dummy];
+  const isDummyTurn = sim.turn === sim.dummy && sim.phase === 'play';
+  let dummyHTML = '<div class="sim-dummy-hand">';
+  dummyHand.forEach((card, i) => {
+    const col = SUIT_COLORS[card.s];
+    const playable = isDummyTurn && canPlayCard(sim.dummy, card);
+    dummyHTML += `<div class="hand-card ${col} ${playable ? 'playable' : ''}" ${playable ? `onclick="simPlayFromHand('${sim.dummy}',${i})"` : ''}>
+      <span class="card-rank">${card.r}</span><span class="card-suit">${SUITS[card.s]}</span></div>`;
+  });
+  dummyHTML += '</div>';
+
+  // Player hand (S)
+  const playerHand = sim.hands.S;
+  const isPlayerTurn = sim.turn === 'S' && sim.phase === 'play';
+  let playerHTML = '<div class="sim-player-hand">';
+  playerHand.forEach((card, i) => {
+    const col = SUIT_COLORS[card.s];
+    const playable = isPlayerTurn && canPlayCard('S', card);
+    playerHTML += `<div class="hand-card ${col} ${playable ? 'playable' : ''}" ${playable ? `onclick="simPlayFromHand('S',${i})"` : ''}>
+      <span class="card-rank">${card.r}</span><span class="card-suit">${SUITS[card.s]}</span></div>`;
+  });
+  playerHTML += '</div>';
+
+  // Coach message
+  let coachHTML = '';
+  if (sim.coachMsg) {
+    coachHTML = `<div class="sim-coach"><span class="sim-coach-icon">💡</span><div class="sim-coach-text">${sim.coachMsg}</div></div>`;
+  }
+
+  // Trick result
+  let trickHTML = '';
+  if (sim.trickResult) {
+    trickHTML = `<div class="trick-result ${sim.trickResult.won ? 'won' : 'lost'}">${sim.trickResult.msg}</div>`;
+  }
+
+  c.innerHTML = `
+    <div class="sim-game">
+      <div class="sim-top-bar">
+        <button class="sim-back" onclick="exitSim()">&larr;</button>
+        <div class="sim-info">
+          <div class="contract-label">Contract</div>
+          <div class="contract-value">${sim.contract} ${sim.trump ? '('+SUIT_NAMES[sim.trump]+' trump)' : '(No Trump)'}</div>
+        </div>
+        <div class="sim-tricks-display">
+          <div class="tricks-us">Us: ${sim.tricksNS}</div>
+          <div class="tricks-them">Them: ${sim.tricksEW}</div>
+        </div>
+      </div>
+
+      ${coachHTML}
+
+      <div style="text-align:center;font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;font-weight:700">
+        DUMMY${sim.turn === sim.dummy && sim.phase === 'play' ? ' — your turn to play a card' : ''}
+      </div>
+      ${dummyHTML}
+
+      <div class="sim-table">
+        <div class="sim-table-grid">
+          <div class="sim-seat north">
+            ${seatLabel(sim.dummy)}
+            ${seatCardHTML(sim.dummy)}
+          </div>
+          <div class="sim-seat west">
+            ${seatLabel('W')}
+            ${seatCardHTML('W')}
+          </div>
+          <div class="sim-seat center-area">
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);font-weight:800">Trick ${sim.trickNum}/13</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.3);margin-top:2px">Need: ${sim.target}</div>
+          </div>
+          <div class="sim-seat east">
+            ${seatLabel('E')}
+            ${seatCardHTML('E')}
+          </div>
+          <div class="sim-seat south">
+            ${seatLabel('S')}
+            ${seatCardHTML('S')}
+          </div>
+        </div>
+      </div>
+
+      ${trickHTML}
+
+      <div style="text-align:center;font-size:0.75rem;color:var(--text-dim);margin-bottom:4px;font-weight:700">
+        YOUR HAND${sim.turn === 'S' && sim.phase === 'play' ? ' — choose a card to play' : ''}
+      </div>
+      ${playerHTML}
+    </div>
+  `;
+}
+
+function simPlayFromHand(seat, idx) {
+  if (sim.phase !== 'play') return;
+  if (sim.turn !== seat) return;
+
+  const card = sim.hands[seat][idx];
+  if (!canPlayCard(seat, card)) return;
+
+  playCard(seat, card);
+}
+
+function renderSimResult() {
+  const c = document.getElementById('simContainer');
+  const made = sim.tricksNS >= sim.target;
+  const diff = sim.tricksNS - sim.target;
+  const icon = made ? '🏆' : '😔';
+  const title = made ? 'Contract Made!' : 'Contract Defeated';
+  const subtitle = made
+    ? (diff > 0 ? `Made with ${diff} overtrick${diff > 1 ? 's' : ''}!` : 'Exactly on target!')
+    : `Down ${Math.abs(diff)}. You needed ${sim.target} tricks.`;
+
+  const xpEarned = made ? 20 : 5;
+  state.xp += xpEarned;
+
+  if (made && sim.mode === 'scenario' && sim.scenarioIdx !== null) {
+    if (!state.completedScenarios) state.completedScenarios = [];
+    if (!state.completedScenarios.includes(sim.scenarioIdx)) {
+      state.completedScenarios.push(sim.scenarioIdx);
+    }
+  }
+
+  saveState();
+  updateNav();
+
+  c.innerHTML = `
+    <div class="sim-result">
+      <div class="sim-result-icon">${icon}</div>
+      <h2>${title}</h2>
+      <div class="result-subtitle">${subtitle}</div>
+      <div class="sim-result-stats">
+        <div class="sim-result-stat">
+          <div class="val" style="color:var(--green)">${sim.tricksNS}</div>
+          <div class="label">Your Tricks</div>
+        </div>
+        <div class="sim-result-stat">
+          <div class="val" style="color:var(--red)">${sim.tricksEW}</div>
+          <div class="label">Their Tricks</div>
+        </div>
+        <div class="sim-result-stat">
+          <div class="val" style="color:var(--gold)">+${xpEarned}</div>
+          <div class="label">XP Earned</div>
+        </div>
+      </div>
+      <button class="sim-btn" onclick="simPlayAgain()">Play Again</button>
+      <button class="sim-btn secondary" onclick="exitSim()">Back to Menu</button>
+    </div>
+  `;
+}
+
+function simPlayAgain() {
+  if (sim.mode === 'scenario' && sim.scenarioIdx !== null) {
+    startScenario(sim.scenarioIdx);
+  } else {
+    startRandomDeal();
+  }
+}
+
+function exitSim() {
+  sim.phase = 'play';
+  renderSimMenu();
+}
+
+// ===========================
 // INIT
 // ===========================
 loadState();
+if (!state.completedScenarios) state.completedScenarios = [];
 updateNav();
 renderPath();
 </script>
