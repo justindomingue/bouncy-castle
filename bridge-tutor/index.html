@@ -1,0 +1,2551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bridge Tutor - Learn Bridge the Fun Way</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --green: #58cc02;
+  --green-dark: #46a302;
+  --green-light: #d7ffb8;
+  --blue: #1cb0f6;
+  --blue-dark: #1899d6;
+  --red: #ff4b4b;
+  --red-dark: #ea2b2b;
+  --orange: #ff9600;
+  --orange-dark: #cd7b00;
+  --purple: #ce82ff;
+  --purple-dark: #a855f7;
+  --gold: #ffc800;
+  --gold-dark: #e6b400;
+  --gray: #e5e5e5;
+  --gray-dark: #afafaf;
+  --gray-darker: #777;
+  --bg: #131f24;
+  --bg-light: #1a2b33;
+  --bg-card: #233340;
+  --text: #ffffff;
+  --text-dim: #93a8b4;
+  --heart: #ff4b4b;
+  --correct-bg: #1b3a1b;
+  --wrong-bg: #3a1b1b;
+  --suit-red: #e74c3c;
+  --suit-black: #2c3e50;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== TOP NAV ===== */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-light);
+  border-bottom: 2px solid var(--bg-card);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--green);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.stat-icon { font-size: 1.2rem; }
+
+.streak-fire { color: var(--orange); }
+.xp-bolt { color: var(--gold); }
+.heart-icon { color: var(--heart); }
+.gem-icon { color: var(--blue); }
+
+/* ===== SCREENS ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ===== HOME / PATH SCREEN ===== */
+.path-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 30px 20px 100px;
+}
+
+.unit-header {
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.unit-header:hover { transform: scale(1.02); }
+
+.unit-header.locked {
+  background: linear-gradient(135deg, var(--gray-dark), var(--gray-darker));
+  opacity: 0.6;
+}
+
+.unit-header.blue-theme { background: linear-gradient(135deg, var(--blue), var(--blue-dark)); }
+.unit-header.purple-theme { background: linear-gradient(135deg, var(--purple), var(--purple-dark)); }
+.unit-header.orange-theme { background: linear-gradient(135deg, var(--orange), var(--orange-dark)); }
+.unit-header.gold-theme { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); }
+.unit-header.red-theme { background: linear-gradient(135deg, var(--red), var(--red-dark)); }
+
+.unit-label { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
+.unit-title { font-size: 1.3rem; font-weight: 900; margin-top: 4px; }
+.unit-desc { font-size: 0.9rem; opacity: 0.85; margin-top: 4px; }
+
+.lesson-nodes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.lesson-node {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 900;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  border: 4px solid transparent;
+}
+
+.lesson-node:hover:not(.locked) { transform: scale(1.1); }
+
+.lesson-node.available {
+  background: var(--green);
+  border-color: var(--green-dark);
+  box-shadow: 0 6px 0 var(--green-dark);
+  color: white;
+}
+
+.lesson-node.available:active {
+  box-shadow: 0 2px 0 var(--green-dark);
+  transform: translateY(4px);
+}
+
+.lesson-node.completed {
+  background: var(--gold);
+  border-color: var(--gold-dark);
+  box-shadow: 0 4px 0 var(--gold-dark);
+  color: white;
+}
+
+.lesson-node.locked {
+  background: var(--bg-card);
+  border-color: #3a4a55;
+  box-shadow: 0 4px 0 #2a3a44;
+  color: var(--gray-dark);
+  cursor: not-allowed;
+}
+
+.node-crown {
+  position: absolute;
+  top: -18px;
+  font-size: 1.3rem;
+}
+
+.lesson-connector {
+  width: 4px;
+  height: 16px;
+  background: var(--bg-card);
+  border-radius: 2px;
+}
+
+.lesson-connector.active { background: var(--green-dark); }
+
+/* offset nodes for zigzag path */
+.lesson-nodes .lesson-node:nth-child(odd) { margin-left: -60px; }
+.lesson-nodes .lesson-node:nth-child(even) { margin-right: -60px; }
+
+/* ===== LESSON SCREEN ===== */
+.lesson-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+}
+
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.progress-close {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  padding: 4px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 16px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+
+.progress-hearts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  color: var(--heart);
+}
+
+/* Lesson content area */
+.lesson-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.lesson-prompt {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.lesson-instruction {
+  font-size: 1rem;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+
+/* Teaching slides */
+.teach-slide {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.teach-slide h3 {
+  font-size: 1.2rem;
+  color: var(--green);
+  margin-bottom: 12px;
+}
+
+.teach-slide p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.teach-slide .highlight {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.teach-slide .card-display {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.mini-card {
+  width: 52px;
+  height: 74px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border: 2px solid #ddd;
+}
+
+.mini-card.red { color: var(--suit-red); }
+.mini-card.black { color: var(--suit-black); }
+
+.mini-card .card-rank { font-size: 1.1rem; line-height: 1; }
+.mini-card .card-suit { font-size: 1.2rem; line-height: 1; }
+
+.suit-symbol { font-weight: 900; }
+.suit-symbol.spade { color: var(--suit-black); }
+.suit-symbol.heart { color: var(--suit-red); }
+.suit-symbol.diamond { color: var(--suit-red); }
+.suit-symbol.club { color: var(--suit-black); }
+
+/* Multiple choice */
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.choice-btn {
+  background: var(--bg-card);
+  border: 2px solid #3a4a55;
+  border-radius: 14px;
+  padding: 16px 20px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.choice-btn:hover { border-color: var(--blue); background: rgba(28, 176, 246, 0.1); }
+.choice-btn.selected { border-color: var(--blue); background: rgba(28, 176, 246, 0.15); }
+.choice-btn.correct { border-color: var(--green); background: rgba(88, 204, 2, 0.15); }
+.choice-btn.wrong { border-color: var(--red); background: rgba(255, 75, 75, 0.15); }
+
+/* True/False */
+.tf-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.tf-btn {
+  flex: 1;
+  padding: 20px;
+  border-radius: 14px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: 3px solid;
+  transition: all 0.15s;
+  font-family: inherit;
+  background: var(--bg-card);
+}
+
+.tf-btn.true-btn { border-color: var(--green); color: var(--green); }
+.tf-btn.false-btn { border-color: var(--red); color: var(--red); }
+.tf-btn:hover { transform: scale(1.03); }
+.tf-btn.selected.true-btn { background: rgba(88, 204, 2, 0.2); }
+.tf-btn.selected.false-btn { background: rgba(255, 75, 75, 0.2); }
+
+/* Match pairs */
+.match-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.match-item {
+  background: var(--bg-card);
+  border: 2px solid #3a4a55;
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.95rem;
+}
+
+.match-item:hover { border-color: var(--blue); }
+.match-item.selected { border-color: var(--blue); background: rgba(28, 176, 246, 0.15); }
+.match-item.matched { border-color: var(--green); background: rgba(88, 204, 2, 0.1); opacity: 0.6; pointer-events: none; }
+.match-item.wrong-match { border-color: var(--red); background: rgba(255, 75, 75, 0.15); }
+
+/* Order/Sort exercise */
+.sort-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sort-item {
+  background: var(--bg-card);
+  border: 2px solid #3a4a55;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-weight: 700;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.sort-item:hover { border-color: var(--blue); }
+.sort-item .sort-handle { color: var(--text-dim); font-size: 1.2rem; }
+.sort-item.dragging { opacity: 0.5; border-color: var(--blue); }
+
+.sort-slot {
+  min-height: 54px;
+  border: 2px dashed #3a4a55;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* Fill in the blank */
+.fill-blank-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.word-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 16px;
+  background: var(--bg-card);
+  border-radius: 12px;
+}
+
+.word-chip {
+  background: var(--bg-light);
+  border: 2px solid #3a4a55;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.word-chip:hover { border-color: var(--blue); }
+.word-chip.used { opacity: 0.3; pointer-events: none; }
+
+/* Interactive trick play */
+.trick-area {
+  background: #1a5c2a;
+  border-radius: 20px;
+  padding: 30px;
+  margin: 16px 0;
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trick-center {
+  display: grid;
+  grid-template-areas:
+    ". north ."
+    "west center east"
+    ". south .";
+  gap: 8px;
+  align-items: center;
+  justify-items: center;
+}
+
+.trick-pos {
+  width: 60px;
+  height: 80px;
+  border: 2px dashed rgba(255,255,255,0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trick-pos.north { grid-area: north; }
+.trick-pos.south { grid-area: south; }
+.trick-pos.east { grid-area: east; }
+.trick-pos.west { grid-area: west; }
+.trick-pos .mini-card { transform: scale(0.9); }
+
+.player-hand {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.hand-card {
+  width: 56px;
+  height: 78px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 3px solid #ccc;
+  transition: all 0.2s;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+
+.hand-card:hover { transform: translateY(-8px); border-color: var(--blue); }
+.hand-card.selected { transform: translateY(-12px); border-color: var(--gold); }
+.hand-card .card-rank { font-size: 1.1rem; font-weight: 900; line-height: 1; }
+.hand-card .card-suit { font-size: 1.3rem; line-height: 1; }
+.hand-card.red { color: var(--suit-red); }
+.hand-card.black { color: var(--suit-black); }
+
+/* Bottom check bar */
+.check-bar {
+  padding: 20px;
+  margin-top: auto;
+}
+
+.check-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.check-btn.primary {
+  background: var(--green);
+  color: white;
+  box-shadow: 0 5px 0 var(--green-dark);
+}
+
+.check-btn.primary:active {
+  box-shadow: 0 2px 0 var(--green-dark);
+  transform: translateY(3px);
+}
+
+.check-btn.primary:disabled {
+  background: var(--bg-card);
+  color: var(--gray-dark);
+  box-shadow: 0 4px 0 #2a3a44;
+  cursor: not-allowed;
+}
+
+.check-btn.continue {
+  background: var(--blue);
+  color: white;
+  box-shadow: 0 5px 0 var(--blue-dark);
+}
+
+.check-btn.skip {
+  background: transparent;
+  color: var(--text-dim);
+  border: 2px solid var(--bg-card);
+  box-shadow: none;
+  font-size: 0.95rem;
+  margin-top: 8px;
+}
+
+/* Feedback banner */
+.feedback-banner {
+  padding: 16px 20px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  animation: slideUp 0.3s ease;
+}
+
+.feedback-banner.correct {
+  display: flex;
+  background: var(--correct-bg);
+  border: 2px solid var(--green);
+}
+
+.feedback-banner.wrong {
+  display: flex;
+  background: var(--wrong-bg);
+  border: 2px solid var(--red);
+}
+
+.feedback-icon { font-size: 1.5rem; }
+.feedback-text { font-weight: 700; font-size: 1rem; }
+.feedback-explain { font-weight: 400; font-size: 0.9rem; color: var(--text-dim); margin-top: 4px; }
+
+/* ===== LESSON COMPLETE ===== */
+.complete-screen {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.complete-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  animation: bounceIn 0.6s ease;
+}
+
+.complete-title {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.complete-subtitle {
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+}
+
+.complete-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.complete-stat {
+  text-align: center;
+}
+
+.complete-stat-value {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--green);
+}
+
+.complete-stat-label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.complete-btn {
+  width: 100%;
+  max-width: 300px;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  background: var(--green);
+  color: white;
+  box-shadow: 0 5px 0 var(--green-dark);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+
+.complete-btn:active {
+  box-shadow: 0 2px 0 var(--green-dark);
+  transform: translateY(3px);
+}
+
+/* ===== TIP BOX ===== */
+.tip-box {
+  background: rgba(28, 176, 246, 0.1);
+  border: 2px solid var(--blue);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  display: flex;
+  gap: 12px;
+}
+
+.tip-icon { font-size: 1.3rem; flex-shrink: 0; }
+.tip-text { font-size: 0.95rem; line-height: 1.5; }
+
+/* ===== TABLE DIAGRAM ===== */
+.table-diagram {
+  width: 200px;
+  height: 200px;
+  background: #1a5c2a;
+  border-radius: 50%;
+  margin: 16px auto;
+  position: relative;
+  border: 4px solid #2a7c3a;
+}
+
+.table-player {
+  position: absolute;
+  font-weight: 800;
+  font-size: 0.85rem;
+  background: var(--bg-card);
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.table-player.north { top: -14px; left: 50%; transform: translateX(-50%); }
+.table-player.south { bottom: -14px; left: 50%; transform: translateX(-50%); }
+.table-player.east { right: -20px; top: 50%; transform: translateY(-50%); }
+.table-player.west { left: -20px; top: 50%; transform: translateY(-50%); }
+
+.table-player.partner { color: var(--green); border: 2px solid var(--green); }
+.table-player.opponent { color: var(--red); border: 2px solid var(--red); }
+.table-player.you { color: var(--gold); border: 2px solid var(--gold); }
+
+/* ===== BIDDING BOX ===== */
+.bid-display {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.bid-chip {
+  background: var(--bg-light);
+  border: 2px solid #3a4a55;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 800;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bid-chip.pass { color: var(--gray-dark); }
+.bid-chip .bid-level { font-size: 1.1rem; }
+
+/* ===== SCORING TABLE ===== */
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 0.9rem;
+}
+
+.score-table th, .score-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #3a4a55;
+}
+
+.score-table th {
+  color: var(--green);
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.1); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes correctShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.animate-correct { animation: bounceIn 0.4s ease; }
+.animate-wrong { animation: correctShake 0.3s ease; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .lesson-prompt { font-size: 1.25rem; }
+  .mini-card { width: 44px; height: 64px; font-size: 0.75rem; }
+  .hand-card { width: 48px; height: 68px; }
+  .table-diagram { width: 160px; height: 160px; }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg-card); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #3a4a55; }
+
+/* Point values diagram */
+.point-cards {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.point-card-item {
+  text-align: center;
+}
+
+.point-value {
+  background: var(--gold);
+  color: #000;
+  font-weight: 900;
+  font-size: 1.1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px auto 0;
+}
+
+/* Bidding ladder */
+.bid-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.bid-rung {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.bid-rung .level {
+  font-weight: 900;
+  font-size: 1.1rem;
+  width: 28px;
+  text-align: center;
+  color: var(--gold);
+}
+
+.bid-rung .suits {
+  display: flex;
+  gap: 4px;
+}
+
+.bid-rung .suit-box {
+  width: 36px;
+  height: 30px;
+  background: var(--bg-light);
+  border: 1px solid #3a4a55;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+/* Convention card style */
+.convention-box {
+  background: rgba(206, 130, 255, 0.1);
+  border: 2px solid var(--purple);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px 0;
+}
+
+.convention-box h4 {
+  color: var(--purple);
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.convention-box p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="nav-logo" onclick="showScreen('home')">
+    <span>🃏</span> Bridge Tutor
+  </div>
+  <div class="nav-stats">
+    <div class="stat-item">
+      <span class="stat-icon streak-fire">🔥</span>
+      <span id="streakCount">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon xp-bolt">⚡</span>
+      <span id="xpCount">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon heart-icon">❤️</span>
+      <span id="heartCount">5</span>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME SCREEN -->
+<div id="homeScreen" class="screen active">
+  <div class="path-container" id="pathContainer"></div>
+</div>
+
+<!-- LESSON SCREEN -->
+<div id="lessonScreen" class="screen">
+  <div class="lesson-container">
+    <div class="progress-bar-container">
+      <button class="progress-close" onclick="exitLesson()">&times;</button>
+      <div class="progress-bar">
+        <div class="progress-fill" id="lessonProgress" style="width: 0%"></div>
+      </div>
+      <div class="progress-hearts">
+        <span>❤️</span> <span id="lessonHearts">5</span>
+      </div>
+    </div>
+    <div class="lesson-content" id="lessonContent"></div>
+    <div class="check-bar">
+      <div class="feedback-banner" id="feedbackBanner">
+        <span class="feedback-icon" id="feedbackIcon"></span>
+        <div>
+          <div class="feedback-text" id="feedbackText"></div>
+          <div class="feedback-explain" id="feedbackExplain"></div>
+        </div>
+      </div>
+      <button class="check-btn primary" id="checkBtn" onclick="handleCheck()" disabled>CHECK</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPLETE SCREEN -->
+<div id="completeScreen" class="screen">
+  <div class="complete-screen">
+    <div class="complete-icon">🏆</div>
+    <div class="complete-title">Lesson Complete!</div>
+    <div class="complete-subtitle" id="completeSubtitle">Great work!</div>
+    <div class="complete-stats">
+      <div class="complete-stat">
+        <div class="complete-stat-value" id="completeXP">+15</div>
+        <div class="complete-stat-label">XP earned</div>
+      </div>
+      <div class="complete-stat">
+        <div class="complete-stat-value" id="completeAccuracy">100%</div>
+        <div class="complete-stat-label">Accuracy</div>
+      </div>
+    </div>
+    <button class="complete-btn" onclick="finishLesson()">CONTINUE</button>
+  </div>
+</div>
+
+<script>
+// ===========================
+// STATE
+// ===========================
+const state = {
+  xp: 0,
+  hearts: 5,
+  streak: 0,
+  completedLessons: [],
+  currentUnit: 0,
+  currentLesson: 0,
+  currentStep: 0,
+  lessonCorrect: 0,
+  lessonTotal: 0,
+  lessonHearts: 5,
+  selectedAnswer: null,
+  checked: false,
+  matchState: null,
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('bridgeTutor');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      Object.assign(state, parsed);
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('bridgeTutor', JSON.stringify({
+      xp: state.xp,
+      hearts: state.hearts,
+      streak: state.streak,
+      completedLessons: state.completedLessons,
+    }));
+  } catch(e) {}
+}
+
+// ===========================
+// CARD HELPERS
+// ===========================
+const SUITS = { S: '♠', H: '♥', D: '♦', C: '♣' };
+const SUIT_COLORS = { S: 'black', H: 'red', D: 'red', C: 'black' };
+
+function cardHTML(rank, suit, extra='') {
+  const s = SUITS[suit] || suit;
+  const c = SUIT_COLORS[suit] || (suit === '♥' || suit === '♦' ? 'red' : 'black');
+  return `<div class="mini-card ${c} ${extra}"><span class="card-rank">${rank}</span><span class="card-suit">${s}</span></div>`;
+}
+
+function handCardHTML(rank, suit, idx) {
+  const s = SUITS[suit] || suit;
+  const c = SUIT_COLORS[suit] || 'black';
+  return `<div class="hand-card ${c}" data-idx="${idx}" onclick="selectHandCard(${idx})"><span class="card-rank">${rank}</span><span class="card-suit">${s}</span></div>`;
+}
+
+function suitSpan(suit) {
+  const syms = { S: '♠', H: '♥', D: '♦', C: '♣', NT: 'NT' };
+  const cls = { S: 'spade', H: 'heart', D: 'diamond', C: 'club' };
+  return `<span class="suit-symbol ${cls[suit] || ''}">${syms[suit] || suit}</span>`;
+}
+
+// ===========================
+// CURRICULUM
+// ===========================
+const curriculum = [
+  // UNIT 1: The Basics
+  {
+    title: "The Basics",
+    desc: "What is bridge? Meet the deck, the players, and the goal.",
+    theme: "",
+    lessons: [
+      // Lesson 1: Welcome to Bridge
+      {
+        title: "Welcome to Bridge",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>Welcome to Bridge! 🃏</h3>
+              <p>Bridge is one of the world's greatest card games. It's a <span class="highlight">partnership game</span> for exactly <span class="highlight">4 players</span>.</p>
+              <p>You and your partner sit across from each other and work as a team against the other pair.</p>
+              <div class="table-diagram">
+                <div class="table-player north partner">Partner (N)</div>
+                <div class="table-player south you">You (S)</div>
+                <div class="table-player east opponent">Opp (E)</div>
+                <div class="table-player west opponent">Opp (W)</div>
+              </div>
+              <p>North-South are partners. East-West are partners.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>The Standard Deck</h3>
+              <p>Bridge uses a standard <span class="highlight">52-card deck</span> with 4 suits:</p>
+              <div style="display:flex;gap:20px;justify-content:center;margin:16px 0;font-size:2rem;">
+                <div style="text-align:center">
+                  <span class="suit-symbol spade">♠</span>
+                  <div style="font-size:0.7rem;margin-top:4px">Spades</div>
+                </div>
+                <div style="text-align:center">
+                  <span class="suit-symbol heart">♥</span>
+                  <div style="font-size:0.7rem;margin-top:4px">Hearts</div>
+                </div>
+                <div style="text-align:center">
+                  <span class="suit-symbol diamond">♦</span>
+                  <div style="font-size:0.7rem;margin-top:4px">Diamonds</div>
+                </div>
+                <div style="text-align:center">
+                  <span class="suit-symbol club">♣</span>
+                  <div style="font-size:0.7rem;margin-top:4px">Clubs</div>
+                </div>
+              </div>
+              <p>Each suit has 13 cards: A, K, Q, J, 10, 9, 8, 7, 6, 5, 4, 3, 2</p>
+              <p><span class="highlight">Ace is the highest</span>, 2 is the lowest.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Dealing</h3>
+              <p>All 52 cards are dealt out evenly. Each player gets exactly <span class="highlight">13 cards</span>.</p>
+              <p>52 cards &divide; 4 players = 13 cards each. Simple!</p>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">In bridge, you always have 13 cards in your hand. This is important to remember for counting!</span>
+              </div>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "How many players are in a game of bridge?",
+            choices: ["2 players", "4 players", "6 players", "8 players"],
+            correct: 1,
+            explain: "Bridge is always played with exactly 4 players in 2 partnerships."
+          },
+          {
+            type: "mc",
+            prompt: "How many cards does each player receive?",
+            choices: ["7 cards", "10 cards", "13 cards", "26 cards"],
+            correct: 2,
+            explain: "52 cards divided equally among 4 players = 13 cards each."
+          },
+          {
+            type: "tf",
+            prompt: "In bridge, your partner sits next to you at the table.",
+            correct: false,
+            explain: "Your partner sits ACROSS from you, not next to you. The players beside you are your opponents."
+          },
+          {
+            type: "mc",
+            prompt: "Which card is the highest in bridge?",
+            choices: ["King", "Queen", "Ace", "Joker"],
+            correct: 2,
+            explain: "The Ace is the highest card. Jokers are not used in bridge."
+          },
+        ]
+      },
+      // Lesson 2: Tricks
+      {
+        title: "Playing Tricks",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>What is a Trick?</h3>
+              <p>The core of bridge is <span class="highlight">trick-taking</span>. A trick is one round where each player plays exactly <span class="highlight">one card</span>.</p>
+              <p>Since you have 13 cards, there are <span class="highlight">13 tricks</span> in every hand.</p>
+              <div class="trick-area">
+                <div class="trick-center">
+                  <div class="trick-pos north">${cardHTML('K','S')}</div>
+                  <div class="trick-pos west">${cardHTML('5','S')}</div>
+                  <div style="grid-area:center;font-weight:800;color:rgba(255,255,255,0.5);font-size:0.8rem">TRICK</div>
+                  <div class="trick-pos east">${cardHTML('J','S')}</div>
+                  <div class="trick-pos south">${cardHTML('A','S')}</div>
+                </div>
+              </div>
+              <p style="text-align:center;margin-top:8px">South wins this trick with the Ace! ♠</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Following Suit 🎯</h3>
+              <p>The most important rule in bridge:</p>
+              <p style="font-size:1.2rem;font-weight:800;color:var(--gold);text-align:center;margin:16px 0">You MUST follow suit if you can!</p>
+              <p>If a spade ♠ is led (played first), you <em>must</em> play a spade if you have one.</p>
+              <p>You can only play a different suit if you have <span class="highlight">no cards</span> left in the suit that was led.</p>
+              <div class="tip-box">
+                <span class="tip-icon">⚠️</span>
+                <span class="tip-text">This is the #1 rule beginners forget! Always follow suit if you can.</span>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Who Wins the Trick?</h3>
+              <p>When there's no trump suit (we'll learn about trump later):</p>
+              <p>The <span class="highlight">highest card of the suit that was led</span> wins the trick.</p>
+              <p>Cards of other suits don't count (unless they're trump)!</p>
+              <div class="trick-area">
+                <div class="trick-center">
+                  <div class="trick-pos north">${cardHTML('Q','H')}</div>
+                  <div class="trick-pos west">${cardHTML('3','H')}</div>
+                  <div style="grid-area:center;font-weight:800;color:rgba(255,255,255,0.5);font-size:0.8rem">TRICK</div>
+                  <div class="trick-pos east">${cardHTML('K','S')}</div>
+                  <div class="trick-pos south">${cardHTML('7','H')}</div>
+                </div>
+              </div>
+              <p style="text-align:center;margin-top:8px">Hearts were led. The K♠ doesn't count! North's Q♥ wins.</p>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "Hearts are led. You have: 3♥, K♠, A♦, 8♣. What MUST you play?",
+            choices: ["K♠ (highest card)", "A♦ (strongest suit)", "3♥ (follow suit)", "Any card you want"],
+            correct: 2,
+            explain: "You MUST follow suit. Since hearts were led and you have the 3♥, you must play it."
+          },
+          {
+            type: "tf",
+            prompt: "If spades are led, playing the Ace of hearts would win the trick.",
+            correct: false,
+            explain: "Only cards of the led suit matter. The A♥ can't win a spade trick (unless hearts are trump)."
+          },
+          {
+            type: "mc",
+            prompt: "How many total tricks are played in one hand of bridge?",
+            choices: ["10", "12", "13", "26"],
+            correct: 2,
+            explain: "Each player has 13 cards and plays one per trick, so there are always exactly 13 tricks."
+          },
+          {
+            type: "mc",
+            prompt: "Spades are led. The cards played are: 7♠, Q♠, 4♠, J♠. Who wins?",
+            choices: ["The 7♠", "The Q♠", "The 4♠", "The J♠"],
+            correct: 1,
+            explain: "The Queen of Spades is the highest spade played, so it wins the trick."
+          },
+        ]
+      },
+      // Lesson 3: Trump
+      {
+        title: "The Trump Suit",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>Trump: The Super Suit 💪</h3>
+              <p>In bridge, one suit can be designated as the <span class="highlight">trump suit</span>. Trump cards beat ALL cards of other suits!</p>
+              <p>Think of trump as a "wild" suit that always wins.</p>
+              <p>If spades (♠) are trump:</p>
+              <div class="trick-area">
+                <div class="trick-center">
+                  <div class="trick-pos north">${cardHTML('A','H')}</div>
+                  <div class="trick-pos west">${cardHTML('K','H')}</div>
+                  <div style="grid-area:center;font-weight:800;color:rgba(255,255,255,0.5);font-size:0.8rem">♠ trump</div>
+                  <div class="trick-pos east">${cardHTML('2','S')}</div>
+                  <div class="trick-pos south">${cardHTML('Q','H')}</div>
+                </div>
+              </div>
+              <p style="text-align:center;margin-top:8px">Even the tiny 2♠ beats the A♥ when spades are trump!</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>When Can You Trump?</h3>
+              <p>Remember: you MUST follow suit first! You can only play a trump card when you have <span class="highlight">no cards in the suit that was led</span>.</p>
+              <p>This is called <span class="highlight">"ruffing"</span> or "trumping."</p>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">Playing trump when you're void (out of) the led suit is a key strategy in bridge!</span>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>No Trump (NT)</h3>
+              <p>Sometimes the hand is played with <span class="highlight">No Trump</span> (abbreviated NT).</p>
+              <p>In No Trump, there is no special suit. The highest card of the suit led always wins.</p>
+              <p>No Trump contracts often favor hands with strength in all four suits.</p>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "Spades are trump. Hearts are led. You have no hearts. What should you play to WIN the trick?",
+            choices: ["Any card", "The highest card in your hand", "A spade (trump)", "You can't win"],
+            correct: 2,
+            explain: "When you're void in the led suit, you can play a trump card to win the trick!"
+          },
+          {
+            type: "tf",
+            prompt: "You can play a trump card even if you still have cards in the suit that was led.",
+            correct: false,
+            explain: "You MUST follow suit if you can. You can only trump when you have no cards in the led suit."
+          },
+          {
+            type: "mc",
+            prompt: "Hearts are trump. The trick so far: 5♦ led, K♦, 3♥. What do you know?",
+            choices: [
+              "The K♦ is winning",
+              "The 3♥ is winning because hearts are trump",
+              "It's a tie",
+              "The 5♦ is winning because it was led first"
+            ],
+            correct: 1,
+            explain: "Even the lowly 3♥ beats any diamond when hearts are trump. Trump always wins over non-trump suits."
+          },
+        ]
+      },
+    ]
+  },
+
+  // UNIT 2: The Auction
+  {
+    title: "The Auction",
+    desc: "Learn how bidding works and what contracts mean.",
+    theme: "blue-theme",
+    lessons: [
+      // Lesson 4: Intro to Bidding
+      {
+        title: "Intro to Bidding",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>Two Phases of Bridge</h3>
+              <p>Every bridge hand has two phases:</p>
+              <p><span class="highlight">1. The Auction (Bidding)</span> — teams compete to set the contract</p>
+              <p><span class="highlight">2. The Play</span> — one team tries to fulfill the contract</p>
+              <p>The auction happens BEFORE any cards are played. It determines:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li>Which suit is trump (or No Trump)</li>
+                <li>How many tricks the winning team promises to take</li>
+                <li>Who plays the hand (the "declarer")</li>
+              </ul>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>What's a Bid?</h3>
+              <p>A bid is a <span class="highlight">promise</span> to win a certain number of tricks with a certain trump suit.</p>
+              <p>Bids look like: <strong>1♠, 2♥, 3NT, 4♦</strong></p>
+              <p>The number is called the <span class="highlight">level</span>. Here's the trick — the level doesn't mean the exact number of tricks!</p>
+              <p style="font-size:1.2rem;font-weight:800;color:var(--gold);text-align:center;margin:16px 0">Tricks promised = Level + 6</p>
+              <p>So "1♠" means you promise to win <strong>7 tricks</strong> (1+6) with spades as trump.</p>
+              <p>"3NT" means <strong>9 tricks</strong> (3+6) with no trump.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Why +6?</h3>
+              <p>There are 13 tricks total. Getting 6 is about average (half of 13, roughly).</p>
+              <p>The bid level counts the tricks <em>above</em> 6. So you're always promising to do <span class="highlight">better than average</span>.</p>
+              <table class="score-table">
+                <tr><th>Bid</th><th>Tricks Needed</th><th>To Win</th></tr>
+                <tr><td>1-anything</td><td>7</td><td>Majority</td></tr>
+                <tr><td>2-anything</td><td>8</td><td>Tough</td></tr>
+                <tr><td>3-anything</td><td>9</td><td>Hard</td></tr>
+                <tr><td>4-anything</td><td>10</td><td>Very hard</td></tr>
+                <tr><td>5-anything</td><td>11</td><td>Heroic</td></tr>
+                <tr><td>6-anything</td><td>12</td><td>Small Slam!</td></tr>
+                <tr><td>7-anything</td><td>13</td><td>Grand Slam!!</td></tr>
+              </table>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "If you bid 2♥, how many tricks must your partnership win?",
+            choices: ["2 tricks", "6 tricks", "8 tricks", "10 tricks"],
+            correct: 2,
+            explain: "Level + 6 = 2 + 6 = 8 tricks. Your team must win at least 8 of the 13 tricks."
+          },
+          {
+            type: "mc",
+            prompt: "A bid of 3NT means your team needs to take ___ tricks with no trump suit.",
+            choices: ["3 tricks", "6 tricks", "9 tricks", "13 tricks"],
+            correct: 2,
+            explain: "3 + 6 = 9 tricks needed, played with no trump suit."
+          },
+          {
+            type: "mc",
+            prompt: "What is the MAXIMUM possible bid level in bridge?",
+            choices: ["5", "6", "7", "13"],
+            correct: 2,
+            explain: "7 is the highest level. A bid of 7 means you promise ALL 13 tricks (7+6). This is called a Grand Slam!"
+          },
+          {
+            type: "tf",
+            prompt: "A bid of '1♣' means you only need to win 1 trick.",
+            correct: false,
+            explain: "A bid of 1♣ means 1 + 6 = 7 tricks with clubs as trump. The '6' is always added!"
+          },
+        ]
+      },
+      // Lesson 5: The Auction Process
+      {
+        title: "The Auction",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>How the Auction Works</h3>
+              <p>Starting with the dealer, players take turns <span class="highlight">clockwise</span>. On your turn you can:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li><strong>Bid</strong> — must be higher than the last bid</li>
+                <li><strong>Pass</strong> — decline to bid</li>
+                <li><strong>Double</strong> — challenge the opponents' bid (increases stakes)</li>
+                <li><strong>Redouble</strong> — counter a double (increases stakes more!)</li>
+              </ul>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Bid Ranking</h3>
+              <p>Each new bid must be <span class="highlight">higher</span> than the previous one. Bids rank by level first, then by suit:</p>
+              <p style="text-align:center;font-weight:800;margin:12px 0">♣ < ♦ < ♥ < ♠ < NT</p>
+              <p>So at the 1-level, the order is: 1♣, 1♦, 1♥, 1♠, 1NT</p>
+              <p>If someone bids 1♥, the next bid must be at least 1♠, 1NT, or 2-anything.</p>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">Memory trick: the suits rank alphabetically! Clubs, Diamonds, Hearts, Spades — C, D, H, S!</span>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>When Does the Auction End?</h3>
+              <p>The auction ends when <span class="highlight">three consecutive players pass</span> after a bid.</p>
+              <p>Example auction:</p>
+              <div class="bid-display">
+                <div class="bid-chip">1${suitSpan('H')}</div>
+                <div class="bid-chip pass">Pass</div>
+                <div class="bid-chip">2${suitSpan('S')}</div>
+                <div class="bid-chip pass">Pass</div>
+                <div class="bid-chip pass">Pass</div>
+                <div class="bid-chip pass">Pass</div>
+              </div>
+              <p>The final contract is <strong>2♠</strong>. The team that bid spades must win 8 tricks.</p>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "The last bid was 1♥. Which of these is a legal next bid?",
+            choices: ["1♦", "1♣", "1♠", "1♥"],
+            correct: 2,
+            explain: "1♠ is legal because spades rank higher than hearts. 1♦ and 1♣ rank lower, and you can't repeat the same bid."
+          },
+          {
+            type: "mc",
+            prompt: "What ends the auction?",
+            choices: [
+              "One player says 'stop'",
+              "Three consecutive passes after a bid",
+              "All four players have bid once",
+              "Someone bids 7NT"
+            ],
+            correct: 1,
+            explain: "The auction ends after three consecutive passes following the last bid."
+          },
+          {
+            type: "mc",
+            prompt: "Which suit ranks highest in the bidding?",
+            choices: ["♠ Spades", "♥ Hearts", "NT (No Trump)", "♣ Clubs"],
+            correct: 2,
+            explain: "No Trump ranks highest! The full order is: ♣ < ♦ < ♥ < ♠ < NT"
+          },
+          {
+            type: "tf",
+            prompt: "If the last bid was 2♦, you can bid 2♣.",
+            correct: false,
+            explain: "Clubs rank below diamonds. You'd need to bid at least 2♥, 2♠, 2NT, or any 3-level bid."
+          },
+        ]
+      },
+      // Lesson 6: Declarer & Dummy
+      {
+        title: "Declarer & Dummy",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>The Declarer</h3>
+              <p>After the auction, the player who <span class="highlight">first mentioned the winning trump suit</span> on the winning team becomes the <span class="highlight">Declarer</span>.</p>
+              <p>The Declarer plays both their own hand AND their partner's hand!</p>
+              <p>The player to the Declarer's left makes the <span class="highlight">opening lead</span> (plays the first card).</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>The Dummy</h3>
+              <p>The Declarer's partner is called the <span class="highlight">Dummy</span>. After the opening lead, the Dummy lays all 13 cards face-up on the table!</p>
+              <p>The Dummy doesn't play — the Declarer controls both hands. The Dummy gets to relax! 😎</p>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">Seeing 26 cards (your hand + dummy) is a huge advantage. Good declarers use this information to plan their play!</span>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>The Defenders</h3>
+              <p>The other team (the opponents) are called the <span class="highlight">Defenders</span>. Their job is to stop the Declarer from making the contract.</p>
+              <p>So there are three roles:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li><strong>Declarer</strong> — plays both hands, tries to make the contract</li>
+                <li><strong>Dummy</strong> — partner's hand is face up, sits out</li>
+                <li><strong>Defenders</strong> (2 players) — try to defeat the contract</li>
+              </ul>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "Who controls the Dummy's cards?",
+            choices: ["The Dummy player", "The Declarer", "Both defenders", "No one — they play automatically"],
+            correct: 1,
+            explain: "The Declarer plays both their own hand and the Dummy's hand."
+          },
+          {
+            type: "tf",
+            prompt: "The Dummy's cards are kept hidden from the other players.",
+            correct: false,
+            explain: "The Dummy's cards are placed face-UP on the table for everyone to see!"
+          },
+          {
+            type: "mc",
+            prompt: "Who makes the opening lead (first play)?",
+            choices: [
+              "The Declarer",
+              "The Dummy",
+              "The player to the Declarer's left",
+              "The player to the Declarer's right"
+            ],
+            correct: 2,
+            explain: "The player to the Declarer's LEFT makes the opening lead, before the Dummy's hand is revealed."
+          },
+        ]
+      },
+    ]
+  },
+
+  // UNIT 3: Hand Evaluation
+  {
+    title: "Hand Evaluation",
+    desc: "Learn to count your points and decide what to bid.",
+    theme: "purple-theme",
+    lessons: [
+      // Lesson 7: High Card Points
+      {
+        title: "Counting Points",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>High Card Points (HCP)</h3>
+              <p>Before you bid, you need to evaluate your hand. The main method is counting <span class="highlight">High Card Points</span>:</p>
+              <div class="point-cards">
+                <div class="point-card-item">
+                  ${cardHTML('A','S')}
+                  <div class="point-value">4</div>
+                </div>
+                <div class="point-card-item">
+                  ${cardHTML('K','H')}
+                  <div class="point-value">3</div>
+                </div>
+                <div class="point-card-item">
+                  ${cardHTML('Q','D')}
+                  <div class="point-value">2</div>
+                </div>
+                <div class="point-card-item">
+                  ${cardHTML('J','C')}
+                  <div class="point-value">1</div>
+                </div>
+              </div>
+              <p style="text-align:center">Ace = 4 &bull; King = 3 &bull; Queen = 2 &bull; Jack = 1</p>
+              <p>All other cards (10 and below) = 0 points</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Total Points in the Deck</h3>
+              <p>Each suit has: A(4) + K(3) + Q(2) + J(1) = <span class="highlight">10 HCP</span></p>
+              <p>4 suits &times; 10 = <span class="highlight">40 HCP total</span> in the whole deck</p>
+              <p>Average hand: 40 &divide; 4 = <span class="highlight">10 HCP</span></p>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">If you have 13+ HCP, you have a better-than-average hand and should usually open the bidding!</span>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Example Hand</h3>
+              <p>Let's count the HCP in this hand:</p>
+              <div class="card-display" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:16px 0">
+                ${cardHTML('A','S')} ${cardHTML('K','S')} ${cardHTML('7','S')} ${cardHTML('4','S')}
+                ${cardHTML('Q','H')} ${cardHTML('J','H')} ${cardHTML('5','H')}
+                ${cardHTML('A','D')} ${cardHTML('9','D')} ${cardHTML('3','D')}
+                ${cardHTML('K','C')} ${cardHTML('8','C')} ${cardHTML('2','C')}
+              </div>
+              <p>A♠(4) + K♠(3) + Q♥(2) + J♥(1) + A♦(4) + K♣(3) = <span class="highlight">17 HCP</span></p>
+              <p>That's a great hand! Well above average.</p>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "How many HCP is a King worth?",
+            choices: ["1 point", "2 points", "3 points", "4 points"],
+            correct: 2,
+            explain: "King = 3 HCP. Remember: A=4, K=3, Q=2, J=1."
+          },
+          {
+            type: "mc",
+            prompt: "Your hand: A♠, Q♠, 8♠, J♥, 5♥, 3♥, K♦, 10♦, 6♦, 4♦, Q♣, 7♣, 2♣. What's your HCP?",
+            choices: ["9 HCP", "12 HCP", "13 HCP", "15 HCP"],
+            correct: 1,
+            explain: "A♠(4) + Q♠(2) + J♥(1) + K♦(3) + Q♣(2) = 12 HCP"
+          },
+          {
+            type: "tf",
+            prompt: "A 10 is worth 1 HCP.",
+            correct: false,
+            explain: "10s and below are worth 0 HCP. Only A, K, Q, and J have point values."
+          },
+          {
+            type: "mc",
+            prompt: "How many total HCP exist in the entire deck?",
+            choices: ["20", "30", "40", "52"],
+            correct: 2,
+            explain: "Each suit has 10 HCP (4+3+2+1), and 4 suits × 10 = 40 HCP total."
+          },
+        ]
+      },
+      // Lesson 8: Opening Bids
+      {
+        title: "Opening Bids",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>Should You Open?</h3>
+              <p>The first person to make a bid (not pass) "opens" the bidding. The basic rule:</p>
+              <p style="font-size:1.2rem;font-weight:800;color:var(--gold);text-align:center;margin:16px 0">Open with 12-13+ HCP</p>
+              <p>With fewer points, you usually pass and wait.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>What to Open</h3>
+              <p>Your opening bid tells partner about your hand. Basic guidelines:</p>
+              <table class="score-table">
+                <tr><th>Hand Type</th><th>Open</th></tr>
+                <tr><td>5+ cards in a major (♥/♠)</td><td>1♥ or 1♠</td></tr>
+                <tr><td>4+ cards in a minor (♣/♦)</td><td>1♣ or 1♦</td></tr>
+                <tr><td>15-17 HCP, balanced</td><td>1NT</td></tr>
+                <tr><td>20-21 HCP, balanced</td><td>2NT</td></tr>
+                <tr><td>22+ HCP (any shape)</td><td>2♣ (strong!)</td></tr>
+              </table>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">"Balanced" means no very long or very short suits — typically 4-3-3-3, 4-4-3-2, or 5-3-3-2 shape.</span>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Major vs Minor Suits</h3>
+              <p>This distinction is crucial in bridge:</p>
+              <p style="text-align:center;margin:16px 0">
+                <span style="font-size:1.5rem">♠ ♥</span> = <span class="highlight">Major suits</span> (more valuable)<br>
+                <span style="font-size:1.5rem">♦ ♣</span> = <span class="highlight">Minor suits</span> (less valuable)
+              </p>
+              <p>Major suit contracts score more points, so you generally prefer to play in a major suit or No Trump when possible.</p>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "You have 14 HCP and 5 spades. What should you open?",
+            choices: ["Pass", "1♠", "1NT", "2♠"],
+            correct: 1,
+            explain: "With 14 HCP and a 5-card major suit, open 1♠. You have enough points and a nice spade suit to show."
+          },
+          {
+            type: "mc",
+            prompt: "You have 16 HCP and a balanced 4-3-3-3 hand. What should you open?",
+            choices: ["1NT", "1♣", "Pass", "2NT"],
+            correct: 0,
+            explain: "With 15-17 HCP and a balanced hand, open 1NT. This tells partner your exact strength and shape!"
+          },
+          {
+            type: "tf",
+            prompt: "You should always open the bidding if you have 10 HCP.",
+            correct: false,
+            explain: "10 HCP is usually not enough to open. You typically need 12-13+ HCP to open."
+          },
+          {
+            type: "mc",
+            prompt: "Which are the 'major' suits?",
+            choices: ["♣ and ♦", "♥ and ♠", "♠ and ♣", "♥ and ♦"],
+            correct: 1,
+            explain: "Hearts (♥) and Spades (♠) are the major suits. They score more and are preferred for contracts."
+          },
+        ]
+      },
+      // Lesson 9: Responding
+      {
+        title: "Responding to Partner",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>Partner Opened — Now What?</h3>
+              <p>When your partner opens, you're the <span class="highlight">Responder</span>. Your job is to describe YOUR hand so the partnership can find the best contract.</p>
+              <p>Key question: <em>Do we have enough combined points for game?</em></p>
+              <p style="font-size:1.1rem;font-weight:800;color:var(--gold);text-align:center;margin:16px 0">Game typically requires 25+ combined HCP</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Responding to 1 of a Suit</h3>
+              <p>When partner opens 1♣, 1♦, 1♥, or 1♠:</p>
+              <table class="score-table">
+                <tr><th>Your HCP</th><th>Your Response</th></tr>
+                <tr><td>0-5</td><td>Pass (too weak)</td></tr>
+                <tr><td>6-9</td><td>Bid a new suit at 1-level, or raise partner</td></tr>
+                <tr><td>10-12</td><td>Bid a new suit, or jump raise</td></tr>
+                <tr><td>13+</td><td>Game is likely! Keep bidding to game.</td></tr>
+              </table>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Supporting Partner's Suit</h3>
+              <p>If partner opens a major suit and you have <span class="highlight">3+ cards</span> in that suit, you've found a fit!</p>
+              <p>With a fit in partner's major:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li><strong>6-9 HCP</strong>: Raise to 2 (e.g., 1♠ → 2♠)</li>
+                <li><strong>10-12 HCP</strong>: Jump to 3 (e.g., 1♠ → 3♠)</li>
+                <li><strong>13+ HCP</strong>: Bid game! (e.g., 1♠ → 4♠)</li>
+              </ul>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">An 8-card fit (5 + 3 or 4 + 4) in a major suit is the golden goal of bidding!</span>
+              </div>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "Partner opens 1♥. You have: 8 HCP and 3 hearts. What do you bid?",
+            choices: ["Pass", "1♠", "2♥", "4♥"],
+            correct: 2,
+            explain: "With 8 HCP and 3-card support for partner's major, raise to 2♥. This shows a minimum response with support."
+          },
+          {
+            type: "mc",
+            prompt: "Partner opens 1♠. You have 14 HCP and 4 spades. What's your response?",
+            choices: ["2♠", "3♠", "4♠", "Pass"],
+            correct: 2,
+            explain: "With 14 HCP and 4-card support, bid game (4♠)! You have at least 26 combined points (partner's 12+ plus your 14)."
+          },
+          {
+            type: "tf",
+            prompt: "With 4 HCP, you should always pass when partner opens.",
+            correct: true,
+            explain: "With 0-5 HCP, you don't have enough strength to respond. Pass and let the auction continue."
+          },
+          {
+            type: "mc",
+            prompt: "About how many combined HCP does a partnership need for game?",
+            choices: ["15", "20", "25", "30"],
+            correct: 2,
+            explain: "25 combined HCP is the rough target for game. This is why you and partner exchange information through bidding!"
+          },
+        ]
+      },
+    ]
+  },
+
+  // UNIT 4: Scoring
+  {
+    title: "Scoring",
+    desc: "Understand points, games, slams, and penalties.",
+    theme: "orange-theme",
+    lessons: [
+      {
+        title: "Making Your Contract",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>Trick Scores</h3>
+              <p>When you make your contract, you score points for each trick bid and won:</p>
+              <table class="score-table">
+                <tr><th>Trump Suit</th><th>Points per Trick</th></tr>
+                <tr><td>♣ Clubs</td><td>20 per trick</td></tr>
+                <tr><td>♦ Diamonds</td><td>20 per trick</td></tr>
+                <tr><td>♥ Hearts</td><td>30 per trick</td></tr>
+                <tr><td>♠ Spades</td><td>30 per trick</td></tr>
+                <tr><td>NT (first trick)</td><td>40</td></tr>
+                <tr><td>NT (subsequent)</td><td>30 each</td></tr>
+              </table>
+              <p>Notice: majors score MORE than minors! That's why they're preferred.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Game Bonus</h3>
+              <p>If your trick score reaches <span class="highlight">100+</span>, you score a <span class="highlight">Game bonus</span> — a big deal!</p>
+              <p>Game contracts:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li><strong>3NT</strong> = 40 + 30 + 30 = 100 ✓ (9 tricks)</li>
+                <li><strong>4♥ or 4♠</strong> = 4 × 30 = 120 ✓ (10 tricks)</li>
+                <li><strong>5♣ or 5♦</strong> = 5 × 20 = 100 ✓ (11 tricks)</li>
+              </ul>
+              <p>This is why 3NT, 4♥/4♠ are the most common game contracts — they need the fewest tricks!</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Slam Bonuses 🏆</h3>
+              <p><span class="highlight">Small Slam</span> (6-level bid, 12 tricks): Big bonus!</p>
+              <p><span class="highlight">Grand Slam</span> (7-level bid, ALL 13 tricks): Huge bonus!</p>
+              <p>Slams are rare and thrilling. Bidding and making a grand slam is one of the greatest feelings in bridge!</p>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">You typically need 33+ combined HCP for a small slam and 37+ for a grand slam.</span>
+              </div>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "Why do bridge players prefer major suit contracts (♥/♠)?",
+            choices: [
+              "They look cooler",
+              "They score 30/trick vs 20/trick for minors",
+              "Majors have more cards",
+              "There's no real difference"
+            ],
+            correct: 1,
+            explain: "Major suits score 30 per trick vs 20 for minors. This means game in a major needs only 4-level (10 tricks) vs 5-level (11 tricks) in a minor."
+          },
+          {
+            type: "mc",
+            prompt: "What is the easiest game contract to make?",
+            choices: ["5♣ (11 tricks)", "4♠ (10 tricks)", "3NT (9 tricks)", "6♥ (12 tricks)"],
+            correct: 2,
+            explain: "3NT needs only 9 tricks for game. 4♠ needs 10, and 5♣ needs 11. That's why No Trump game is so popular!"
+          },
+          {
+            type: "tf",
+            prompt: "A Grand Slam means winning all 13 tricks.",
+            correct: true,
+            explain: "A Grand Slam (7-level) requires winning every single trick — all 13. Incredibly difficult and rewarding!"
+          },
+        ]
+      },
+      {
+        title: "Penalties & Undertricks",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>Failing Your Contract</h3>
+              <p>If you don't win enough tricks, you go <span class="highlight">down</span> (or "set"). The opponents score penalty points!</p>
+              <p>Each trick you fall short is an <span class="highlight">undertrick</span>.</p>
+              <p>Example: You bid 4♠ (need 10 tricks) but only take 8. You're <strong>down 2</strong> — that's 2 undertricks.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Vulnerability</h3>
+              <p>Bridge has a concept called <span class="highlight">vulnerability</span> that affects penalty sizes:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li><strong>Not Vulnerable</strong>: 50 points per undertrick</li>
+                <li><strong>Vulnerable</strong>: 100 points per undertrick</li>
+              </ul>
+              <p>Vulnerability changes throughout the game. When vulnerable, you take bigger risks but also earn bigger bonuses!</p>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">Being "vulnerable" means more risk AND more reward. It adds an exciting strategic layer!</span>
+              </div>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "You bid 3NT (need 9 tricks) and win only 7. How many undertricks is that?",
+            choices: ["1", "2", "3", "7"],
+            correct: 1,
+            explain: "You needed 9 tricks but won 7. That's 9 - 7 = 2 undertricks (down 2)."
+          },
+          {
+            type: "tf",
+            prompt: "When you're vulnerable, penalties for going down are larger.",
+            correct: true,
+            explain: "Vulnerable undertricks cost 100 each vs 50 when not vulnerable. Higher risk, higher reward!"
+          },
+          {
+            type: "mc",
+            prompt: "You're not vulnerable and go down 3 in your contract. What's the penalty?",
+            choices: ["50 points", "100 points", "150 points", "300 points"],
+            correct: 2,
+            explain: "Not vulnerable: 50 per undertrick × 3 undertricks = 150 points to the opponents."
+          },
+        ]
+      },
+    ]
+  },
+
+  // UNIT 5: Play Strategy
+  {
+    title: "Play Strategy",
+    desc: "Master the art of declarer play and defense.",
+    theme: "gold-theme",
+    lessons: [
+      {
+        title: "Planning the Play",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>Stop and Plan! 🧠</h3>
+              <p>The #1 habit of good declarers: <span class="highlight">STOP and THINK before playing to trick 1!</span></p>
+              <p>Before touching a card, count:</p>
+              <ol style="margin:12px 0 0 20px;line-height:2">
+                <li><strong>How many tricks do I need?</strong></li>
+                <li><strong>How many sure tricks do I have?</strong> (tricks you can win right now)</li>
+                <li><strong>Where can I get extra tricks?</strong></li>
+              </ol>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Sure Tricks (Winners)</h3>
+              <p>A <span class="highlight">sure trick</span> is one you can win immediately with a top card.</p>
+              <p>Example in NT:</p>
+              <div style="display:flex;gap:20px;justify-content:center;margin:16px 0;flex-wrap:wrap">
+                <div style="text-align:center">
+                  <p style="font-weight:700;font-size:0.85rem;color:var(--green)">Your hand</p>
+                  ${cardHTML('A','S')} ${cardHTML('K','S')}
+                </div>
+                <div style="text-align:center">
+                  <p style="font-weight:700;font-size:0.85rem;color:var(--green)">Dummy</p>
+                  ${cardHTML('Q','S')} ${cardHTML('J','S')}
+                </div>
+              </div>
+              <p style="text-align:center">That's <strong>4 sure tricks</strong> in spades — A, K, Q, J are all winners!</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Developing Extra Tricks</h3>
+              <p>If you don't have enough sure tricks, you need to <span class="highlight">develop</span> more. Common techniques:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li><strong>Length</strong>: Play a long suit until opponents run out</li>
+                <li><strong>Finesse</strong>: Try to trap an opponent's high card</li>
+                <li><strong>Ruffing</strong>: Trump losers in the short hand</li>
+                <li><strong>Promotion</strong>: Force out higher cards to make yours good</li>
+              </ul>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "You're in 3NT (need 9 tricks). You count 7 sure tricks. What should you do?",
+            choices: [
+              "Panic and give up",
+              "Start cashing winners immediately",
+              "Plan how to develop 2 more tricks before playing",
+              "Play randomly and hope for the best"
+            ],
+            correct: 2,
+            explain: "Always plan first! You need 2 more tricks, so figure out which suit can produce them before you start playing."
+          },
+          {
+            type: "tf",
+            prompt: "You should play your first card immediately without thinking.",
+            correct: false,
+            explain: "ALWAYS stop and plan before playing to trick 1. This is the most important habit in bridge!"
+          },
+          {
+            type: "mc",
+            prompt: "You have AKQ of hearts between your hand and dummy. How many sure tricks is that?",
+            choices: ["1", "2", "3", "4"],
+            correct: 2,
+            explain: "A, K, and Q are all sure winners — that's 3 sure tricks in hearts."
+          },
+        ]
+      },
+      {
+        title: "The Finesse",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>The Finesse: Bridge's Key Play 🎯</h3>
+              <p>A <span class="highlight">finesse</span> is an attempt to win a trick with a card that isn't the highest, by playing through an opponent's higher card.</p>
+              <p>Example: You have A-Q in a suit. If the King is in the opponent to your right...</p>
+              <div style="display:flex;gap:20px;justify-content:center;margin:16px 0;flex-wrap:wrap;align-items:center">
+                <div style="text-align:center">
+                  <p style="font-weight:700;font-size:0.85rem;color:var(--text-dim)">Dummy (N)</p>
+                  ${cardHTML('A','H')} ${cardHTML('Q','H')}
+                </div>
+                <div style="text-align:center">
+                  <p style="font-weight:700;font-size:0.85rem;color:var(--red)">East</p>
+                  ${cardHTML('K','H')} ${cardHTML('5','H')}
+                </div>
+              </div>
+              <p>Lead a small heart toward the AQ. If East plays the King, win the Ace. If East plays low, play the Queen — it wins!</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>How Finesses Work</h3>
+              <p>The key principle: <span class="highlight">lead TOWARD the card you're trying to finesse with</span>.</p>
+              <p>A finesse works ~50% of the time (depending on which opponent has the missing card). But that's better than 0%!</p>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">You always finesse TOWARD strength. If dummy has AQ, lead from YOUR hand toward dummy.</span>
+              </div>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "Dummy has A-Q of diamonds. Your hand has 3-2 of diamonds. To finesse, you should lead from...",
+            choices: [
+              "Dummy toward your hand",
+              "Your hand toward dummy",
+              "It doesn't matter",
+              "Neither — just play the Ace"
+            ],
+            correct: 1,
+            explain: "Lead from YOUR hand (the weak side) toward the AQ in dummy. This gives East a tough choice."
+          },
+          {
+            type: "tf",
+            prompt: "A finesse works 100% of the time.",
+            correct: false,
+            explain: "A simple finesse works about 50% of the time — it depends on which opponent holds the missing honor."
+          },
+          {
+            type: "mc",
+            prompt: "Why is the finesse such an important technique?",
+            choices: [
+              "It always works",
+              "It can win tricks with cards that aren't the highest",
+              "It looks impressive",
+              "The rules require it"
+            ],
+            correct: 1,
+            explain: "Finesses let you develop extra tricks by trying to avoid losing to the opponents' high cards. It's the most common play technique!"
+          },
+        ]
+      },
+      {
+        title: "Defense Basics",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>Defending 🛡️</h3>
+              <p>When the opponents win the auction, YOU become a defender. Defense is often considered the hardest part of bridge.</p>
+              <p>Unlike declarer, you can't see your partner's hand. You must work together using <span class="highlight">signals</span> and <span class="highlight">logic</span>.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>The Opening Lead</h3>
+              <p>The player to declarer's left leads first. Good opening leads:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li><strong>Top of a sequence</strong>: Lead K from KQJ, Q from QJ10</li>
+                <li><strong>4th best</strong>: From a long suit, lead your 4th highest card</li>
+                <li><strong>Partner's suit</strong>: If partner bid a suit, lead it!</li>
+              </ul>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">Against No Trump, lead your longest suit. Against a suit contract, consider leading a short suit for ruffing opportunities.</span>
+              </div>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Second Hand Low, Third Hand High</h3>
+              <p>Two classic defensive rules:</p>
+              <p><span class="highlight">Second hand low</span>: When declarer leads, the next defender usually plays LOW to conserve high cards.</p>
+              <p><span class="highlight">Third hand high</span>: The third player to a trick plays their HIGHEST card to try to win.</p>
+              <p>These are guidelines, not absolute rules — but they're right most of the time!</p>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "Partner bid hearts during the auction. Against a NT contract, what should you lead?",
+            choices: [
+              "Your longest suit",
+              "A heart (partner's suit)",
+              "A trump card",
+              "Your highest card"
+            ],
+            correct: 1,
+            explain: "When partner bid a suit, leading that suit is usually the best defense. Trust your partner!"
+          },
+          {
+            type: "mc",
+            prompt: "You're third to play to a trick and need to beat the 7 already played. You have K-9-3. What do you play?",
+            choices: ["3 (save the King)", "9 (middle card)", "K (third hand high)", "Any card"],
+            correct: 2,
+            explain: "Third hand high! Play your King to try to win the trick. Saving your high cards here lets declarer win cheaply."
+          },
+          {
+            type: "tf",
+            prompt: "'Second hand low' means the second player to a trick should usually play a low card.",
+            correct: true,
+            explain: "Second hand low preserves your high cards for when they'll be more effective. It's a key defensive guideline."
+          },
+        ]
+      },
+    ]
+  },
+
+  // UNIT 6: Conventions
+  {
+    title: "Conventions & Beyond",
+    desc: "Learn the popular agreements that make bidding precise.",
+    theme: "red-theme",
+    lessons: [
+      {
+        title: "Stayman & Transfers",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>What Are Conventions? 🤝</h3>
+              <p>A <span class="highlight">convention</span> is an agreed-upon artificial bid that doesn't mean what it literally says.</p>
+              <p>Conventions help partners exchange information more precisely. They're like a secret code — but your opponents get to know the code too!</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Stayman Convention</h3>
+              <div class="convention-box">
+                <h4>Stayman (2♣ response to 1NT)</h4>
+                <p>When partner opens 1NT and you have a 4-card major, bid <strong>2♣</strong> to ask: "Do you have a 4-card major?"</p>
+                <p>Partner responds:</p>
+                <p>&bull; <strong>2♥</strong> = "I have 4 hearts"</p>
+                <p>&bull; <strong>2♠</strong> = "I have 4 spades"</p>
+                <p>&bull; <strong>2♦</strong> = "No 4-card major"</p>
+              </div>
+              <p>This helps find an 8-card major suit fit!</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Jacoby Transfers</h3>
+              <div class="convention-box">
+                <h4>Jacoby Transfer (after partner's 1NT)</h4>
+                <p>With 5+ hearts: bid <strong>2♦</strong> → partner bids <strong>2♥</strong></p>
+                <p>With 5+ spades: bid <strong>2♥</strong> → partner bids <strong>2♠</strong></p>
+              </div>
+              <p>Why not just bid your suit directly? Transfers ensure the <span class="highlight">strong hand (1NT opener) becomes declarer</span>, keeping it hidden from defenders!</p>
+              <div class="tip-box">
+                <span class="tip-icon">💡</span>
+                <span class="tip-text">Stayman and Jacoby Transfers are the two most commonly played conventions in the world. Learn these first!</span>
+              </div>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "Partner opens 1NT. You have 4 spades and 10 HCP. What do you bid?",
+            choices: ["2♠", "2♣ (Stayman)", "3NT", "Pass"],
+            correct: 1,
+            explain: "Bid 2♣ (Stayman) to ask if partner has 4 spades. If so, you've found your major suit fit!"
+          },
+          {
+            type: "mc",
+            prompt: "Partner opens 1NT. You have 5 hearts and 8 HCP. Using Jacoby Transfer, you bid...",
+            choices: ["2♥", "2♦", "2♣", "3♥"],
+            correct: 1,
+            explain: "Bid 2♦ as a transfer to hearts. Partner will bid 2♥, and the NT opener becomes declarer."
+          },
+          {
+            type: "tf",
+            prompt: "In Stayman, a 2♣ bid literally means you want to play in clubs.",
+            correct: false,
+            explain: "2♣ Stayman is artificial — it asks partner about major suits. It says nothing about clubs!"
+          },
+        ]
+      },
+      {
+        title: "Blackwood & More",
+        steps: [
+          {
+            type: "teach",
+            content: `
+              <h3>Blackwood Convention (4NT)</h3>
+              <div class="convention-box">
+                <h4>Blackwood — Asking for Aces</h4>
+                <p>When you're thinking about slam, bid <strong>4NT</strong> to ask partner how many Aces they have:</p>
+                <p>&bull; <strong>5♣</strong> = 0 or 4 aces</p>
+                <p>&bull; <strong>5♦</strong> = 1 ace</p>
+                <p>&bull; <strong>5♥</strong> = 2 aces</p>
+                <p>&bull; <strong>5♠</strong> = 3 aces</p>
+              </div>
+              <p>Don't bid a slam missing 2 aces — the opponents will cash them!</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Takeout Doubles</h3>
+              <div class="convention-box">
+                <h4>Takeout Double</h4>
+                <p>When an opponent opens, a <strong>Double</strong> at your first opportunity means: "Partner, I have support for the unbid suits — please pick one!"</p>
+                <p>Requirements: 12+ HCP and usually support for all unbid suits.</p>
+              </div>
+              <p>This is different from a "penalty double" (which says "I think they can't make it!"). Context tells you which is which.</p>
+            `
+          },
+          {
+            type: "teach",
+            content: `
+              <h3>Keep Learning! 🚀</h3>
+              <p>You've now learned the fundamentals of bridge! Here's what to explore next:</p>
+              <ul style="margin:12px 0 0 20px;line-height:2">
+                <li><strong>Weak Two Bids</strong> — preemptive bidding</li>
+                <li><strong>Negative Doubles</strong> — more bidding precision</li>
+                <li><strong>Counting</strong> — track all 52 cards mentally</li>
+                <li><strong>Signals</strong> — tell partner what you like/dislike on defense</li>
+                <li><strong>Squeeze Plays</strong> — advanced endgame technique</li>
+              </ul>
+              <p>The beauty of bridge is that you can play for a lifetime and still learn new things!</p>
+            `
+          },
+          {
+            type: "mc",
+            prompt: "You bid 4NT (Blackwood). Partner responds 5♥. How many aces does partner have?",
+            choices: ["0", "1", "2", "3"],
+            correct: 2,
+            explain: "In Blackwood: 5♣=0/4, 5♦=1, 5♥=2, 5♠=3. Partner has 2 aces."
+          },
+          {
+            type: "mc",
+            prompt: "Opponent opens 1♦. You have 14 HCP with 4 spades, 4 hearts, 3 clubs. Best call?",
+            choices: ["1♠", "Double (takeout)", "1NT", "Pass"],
+            correct: 1,
+            explain: "A takeout double shows opening values with support for the unbid suits — perfect for this hand!"
+          },
+          {
+            type: "tf",
+            prompt: "Blackwood (4NT) asks partner about Kings.",
+            correct: false,
+            explain: "Blackwood 4NT asks about ACES. (5NT Blackwood asks about Kings, but only after the ace-ask!)"
+          },
+        ]
+      },
+    ]
+  },
+];
+
+// ===========================
+// RENDER PATH
+// ===========================
+function renderPath() {
+  const container = document.getElementById('pathContainer');
+  let html = '';
+  let lessonIdx = 0;
+
+  curriculum.forEach((unit, ui) => {
+    const unitLocked = ui > 0 && !isUnitUnlocked(ui);
+    const themeClass = unitLocked ? 'locked' : (unit.theme || '');
+
+    html += `<div class="unit-header ${themeClass}">
+      <div class="unit-label">Unit ${ui + 1}</div>
+      <div class="unit-title">${unit.title}</div>
+      <div class="unit-desc">${unit.desc}</div>
+    </div>`;
+
+    html += `<div class="lesson-nodes">`;
+    unit.lessons.forEach((lesson, li) => {
+      const lid = `${ui}-${li}`;
+      const completed = state.completedLessons.includes(lid);
+      const available = !unitLocked && (li === 0 || state.completedLessons.includes(`${ui}-${li-1}`));
+      const locked = !completed && !available;
+
+      let cls = completed ? 'completed' : (available ? 'available' : 'locked');
+      let icon = completed ? '✓' : (locked ? '🔒' : (li + 1));
+      let crown = completed ? '<span class="node-crown">👑</span>' : '';
+
+      html += `<div class="lesson-node ${cls}" onclick="${locked ? '' : `startLesson(${ui},${li})`}" title="${lesson.title}">
+        ${crown}
+        ${icon}
+      </div>`;
+      lessonIdx++;
+    });
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function isUnitUnlocked(unitIdx) {
+  if (unitIdx === 0) return true;
+  const prevUnit = curriculum[unitIdx - 1];
+  const lastLesson = `${unitIdx - 1}-${prevUnit.lessons.length - 1}`;
+  return state.completedLessons.includes(lastLesson);
+}
+
+// ===========================
+// LESSON ENGINE
+// ===========================
+let currentSteps = [];
+
+function startLesson(unitIdx, lessonIdx) {
+  state.currentUnit = unitIdx;
+  state.currentLesson = lessonIdx;
+  state.currentStep = 0;
+  state.lessonCorrect = 0;
+  state.lessonTotal = 0;
+  state.lessonHearts = state.hearts;
+  state.selectedAnswer = null;
+  state.checked = false;
+
+  currentSteps = curriculum[unitIdx].lessons[lessonIdx].steps;
+  showScreen('lesson');
+  renderStep();
+}
+
+function renderStep() {
+  const step = currentSteps[state.currentStep];
+  const contentEl = document.getElementById('lessonContent');
+  const checkBtn = document.getElementById('checkBtn');
+  const feedback = document.getElementById('feedbackBanner');
+  const progressEl = document.getElementById('lessonProgress');
+
+  feedback.className = 'feedback-banner';
+  state.selectedAnswer = null;
+  state.checked = false;
+
+  const progress = ((state.currentStep) / currentSteps.length) * 100;
+  progressEl.style.width = progress + '%';
+  document.getElementById('lessonHearts').textContent = state.lessonHearts;
+
+  if (step.type === 'teach') {
+    contentEl.innerHTML = `<div class="teach-slide">${step.content}</div>`;
+    checkBtn.textContent = 'CONTINUE';
+    checkBtn.disabled = false;
+    checkBtn.className = 'check-btn continue';
+  } else if (step.type === 'mc') {
+    let choicesHTML = step.choices.map((c, i) =>
+      `<button class="choice-btn" data-idx="${i}" onclick="selectChoice(${i})">${c}</button>`
+    ).join('');
+    contentEl.innerHTML = `
+      <div class="lesson-prompt">${step.prompt}</div>
+      <div class="choices">${choicesHTML}</div>
+    `;
+    checkBtn.textContent = 'CHECK';
+    checkBtn.disabled = true;
+    checkBtn.className = 'check-btn primary';
+  } else if (step.type === 'tf') {
+    contentEl.innerHTML = `
+      <div class="lesson-prompt">${step.prompt}</div>
+      <div class="tf-buttons">
+        <button class="tf-btn true-btn" onclick="selectTF(true)">TRUE</button>
+        <button class="tf-btn false-btn" onclick="selectTF(false)">FALSE</button>
+      </div>
+    `;
+    checkBtn.textContent = 'CHECK';
+    checkBtn.disabled = true;
+    checkBtn.className = 'check-btn primary';
+  }
+}
+
+function selectChoice(idx) {
+  if (state.checked) return;
+  state.selectedAnswer = idx;
+  document.querySelectorAll('.choice-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('checkBtn').disabled = false;
+}
+
+function selectTF(val) {
+  if (state.checked) return;
+  state.selectedAnswer = val;
+  document.querySelectorAll('.tf-btn').forEach(btn => {
+    btn.classList.remove('selected');
+  });
+  const cls = val ? '.true-btn' : '.false-btn';
+  document.querySelector(cls).classList.add('selected');
+  document.getElementById('checkBtn').disabled = false;
+}
+
+function handleCheck() {
+  const step = currentSteps[state.currentStep];
+  const checkBtn = document.getElementById('checkBtn');
+
+  if (step.type === 'teach' || state.checked) {
+    // Move to next step
+    state.currentStep++;
+    if (state.currentStep >= currentSteps.length) {
+      showComplete();
+    } else {
+      renderStep();
+    }
+    return;
+  }
+
+  // Check answer
+  state.checked = true;
+  state.lessonTotal++;
+  let correct = false;
+
+  if (step.type === 'mc') {
+    correct = state.selectedAnswer === step.correct;
+    document.querySelectorAll('.choice-btn').forEach((btn, i) => {
+      if (i === step.correct) btn.classList.add('correct');
+      if (i === state.selectedAnswer && !correct) btn.classList.add('wrong');
+      btn.style.pointerEvents = 'none';
+    });
+  } else if (step.type === 'tf') {
+    correct = state.selectedAnswer === step.correct;
+    if (correct) {
+      document.querySelector(step.correct ? '.true-btn' : '.false-btn').style.background = 'rgba(88,204,2,0.3)';
+    } else {
+      document.querySelector(!step.correct ? '.true-btn' : '.false-btn').style.background = 'rgba(255,75,75,0.3)';
+      document.querySelector(step.correct ? '.true-btn' : '.false-btn').style.background = 'rgba(88,204,2,0.3)';
+    }
+  }
+
+  const feedback = document.getElementById('feedbackBanner');
+  const feedbackIcon = document.getElementById('feedbackIcon');
+  const feedbackText = document.getElementById('feedbackText');
+  const feedbackExplain = document.getElementById('feedbackExplain');
+
+  if (correct) {
+    state.lessonCorrect++;
+    feedback.className = 'feedback-banner correct';
+    feedbackIcon.textContent = '✅';
+    feedbackText.textContent = randomCorrectMsg();
+    feedbackExplain.textContent = step.explain || '';
+  } else {
+    state.lessonHearts = Math.max(0, state.lessonHearts - 1);
+    document.getElementById('lessonHearts').textContent = state.lessonHearts;
+    feedback.className = 'feedback-banner wrong';
+    feedbackIcon.textContent = '❌';
+    feedbackText.textContent = randomWrongMsg();
+    feedbackExplain.textContent = step.explain || '';
+  }
+
+  checkBtn.textContent = 'CONTINUE';
+  checkBtn.className = 'check-btn continue';
+}
+
+function randomCorrectMsg() {
+  const msgs = ['Correct!', 'Excellent!', 'Nailed it!', 'Perfect!', 'Great job!', 'You got it!', 'Well done!', 'Brilliant!'];
+  return msgs[Math.floor(Math.random() * msgs.length)];
+}
+
+function randomWrongMsg() {
+  const msgs = ['Not quite!', 'Incorrect', 'Wrong answer', 'Oops!', 'Not this time'];
+  return msgs[Math.floor(Math.random() * msgs.length)];
+}
+
+function showComplete() {
+  const lid = `${state.currentUnit}-${state.currentLesson}`;
+  const isNew = !state.completedLessons.includes(lid);
+  if (isNew) {
+    state.completedLessons.push(lid);
+  }
+  const xpEarned = isNew ? 15 : 5;
+  state.xp += xpEarned;
+  state.hearts = Math.min(5, state.hearts + 1);
+
+  // Update streak (simple: just increment)
+  state.streak = (state.streak || 0) + 1;
+
+  saveState();
+  updateNav();
+
+  document.getElementById('completeXP').textContent = `+${xpEarned}`;
+  const accuracy = state.lessonTotal > 0 ? Math.round((state.lessonCorrect / state.lessonTotal) * 100) : 100;
+  document.getElementById('completeAccuracy').textContent = accuracy + '%';
+
+  const subtitles = [
+    'You\'re becoming a bridge master!',
+    'Keep up the great work!',
+    'Your bridge skills are growing!',
+    'One step closer to the bridge table!',
+    'Amazing progress!'
+  ];
+  document.getElementById('completeSubtitle').textContent = subtitles[Math.floor(Math.random() * subtitles.length)];
+
+  showScreen('complete');
+}
+
+function finishLesson() {
+  showScreen('home');
+  renderPath();
+}
+
+function exitLesson() {
+  showScreen('home');
+  renderPath();
+}
+
+// ===========================
+// NAV & SCREENS
+// ===========================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(name + 'Screen').classList.add('active');
+}
+
+function updateNav() {
+  document.getElementById('xpCount').textContent = state.xp;
+  document.getElementById('heartCount').textContent = state.hearts;
+  document.getElementById('streakCount').textContent = state.streak;
+}
+
+// ===========================
+// INIT
+// ===========================
+loadState();
+updateNav();
+renderPath();
+</script>
+</body>
+</html>
