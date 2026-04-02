@@ -1108,8 +1108,12 @@ function trickCurrentBest() {
 
 function wouldBeat(card, best) {
   if (!best) return true;
-  if (game.trump && card.suit === game.trump && best.suit !== game.trump) return true;
-  if (card.suit === best.suit && RANK_VAL[card.rank] > RANK_VAL[best.rank]) return true;
+  const cSuit = card.s || card.suit;
+  const cRank = card.r || card.rank;
+  const bSuit = best.s || best.suit;
+  const bRank = best.r || best.rank;
+  if (game.trump && cSuit === game.trump && bSuit !== game.trump) return true;
+  if (cSuit === bSuit && RANK_VAL[cRank] > RANK_VAL[bRank]) return true;
   return false;
 }
 
@@ -1147,7 +1151,7 @@ function analyzeCards(seat) {
 
   if (playable.length <= 1) {
     // Only one legal play — it's the best by default
-    results.forEach(r => { if (r.rating !== 'illegal') r.rating = 'best'; r.reason = 'Only legal play'; });
+    results.forEach(r => { if (r.rating !== 'illegal') { r.rating = 'best'; r.reason = 'Only legal play'; } });
     return results;
   }
 
@@ -1230,7 +1234,7 @@ function analyzeCards(seat) {
           }
         } else if (isPartnerWinning) {
           // Partner is winning — play low
-          const lowest = playable.sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
+          const lowest = [...playable].sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
           if (card.r === lowest.r && card.s === lowest.s) {
             score = 85;
             reason = 'Partner is winning — play low and save your cards';
@@ -1240,7 +1244,7 @@ function analyzeCards(seat) {
           }
         } else {
           // Can't win — play lowest
-          const lowest = playable.sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
+          const lowest = [...playable].sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
           if (card.r === lowest.r && card.s === lowest.s) {
             score = 80;
             reason = 'Can\'t win — play your lowest card';
@@ -1262,7 +1266,7 @@ function analyzeCards(seat) {
             reason = 'Can win cheaper — save this card';
           }
         } else {
-          const lowest = playable.sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
+          const lowest = [...playable].sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
           if (card.r === lowest.r && card.s === lowest.s) {
             score = 75;
             reason = 'Can\'t win — discard your lowest';
