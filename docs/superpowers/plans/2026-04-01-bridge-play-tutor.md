@@ -1,0 +1,2456 @@
+# Bridge Play Tutor Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Build a standalone bridge gameplay tutor (`bridge-play/index.html`) where 1 human player (South) plays with 3 AI players, with always-on card analysis, post-trick reviews, and full hand replay.
+
+**Architecture:** Single self-contained HTML file with embedded CSS and JavaScript, matching the existing `bridge-tutor/index.html` pattern. No dependencies, no build tools. localStorage for persistence. Mobile-first dark theme.
+
+**Tech Stack:** Vanilla HTML/CSS/JavaScript, Google Fonts (Nunito)
+
+---
+
+### Task 1: HTML Shell + CSS Foundation
+
+**Files:**
+- Create: `bridge-play/index.html`
+
+Create the base HTML file with all CSS and the empty screen containers. This establishes the visual foundation — no JavaScript yet.
+
+- [ ] **Step 1: Create the HTML file with meta tags, CSS variables, and base styles**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bridge Play Tutor - Learn by Playing</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --green: #58cc02;
+  --green-dark: #46a302;
+  --green-light: #d7ffb8;
+  --blue: #1cb0f6;
+  --blue-dark: #1899d6;
+  --red: #ff4b4b;
+  --red-dark: #ea2b2b;
+  --orange: #ff9600;
+  --orange-dark: #cd7b00;
+  --purple: #ce82ff;
+  --purple-dark: #a855f7;
+  --gold: #ffc800;
+  --gold-dark: #e6b400;
+  --gray: #e5e5e5;
+  --gray-dark: #afafaf;
+  --gray-darker: #777;
+  --bg: #131f24;
+  --bg-light: #1a2b33;
+  --bg-card: #233340;
+  --text: #ffffff;
+  --text-dim: #93a8b4;
+  --heart: #ff4b4b;
+  --suit-red: #e74c3c;
+  --suit-black: #2c3e50;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== TOP BAR ===== */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-light);
+  border-bottom: 2px solid var(--bg-card);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px;
+  font-family: inherit;
+}
+
+.top-bar-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.top-bar-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* ===== SCREENS ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ===== MENU SCREEN ===== */
+.menu-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.menu-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.menu-header h2 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.menu-header p {
+  color: var(--text-dim);
+  font-size: 1rem;
+}
+
+.menu-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 30px;
+  padding: 16px;
+  background: var(--bg-card);
+  border-radius: 14px;
+}
+
+.menu-stat {
+  text-align: center;
+}
+
+.menu-stat .val {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.menu-stat .label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.mode-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.15s, border-color 0.15s;
+  border: 2px solid transparent;
+}
+
+.mode-card:hover {
+  transform: scale(1.02);
+  border-color: var(--green);
+}
+
+.mode-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mode-card.locked:hover {
+  transform: none;
+  border-color: transparent;
+}
+
+.mode-icon {
+  font-size: 2rem;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-light);
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.mode-info h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.mode-info p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.cross-link {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.cross-link a {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* ===== GUIDED HANDS LIST ===== */
+.guided-list {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.guided-card {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.15s;
+  border: 2px solid transparent;
+}
+
+.guided-card:hover {
+  transform: scale(1.01);
+  border-color: var(--green);
+}
+
+.guided-card.completed {
+  border-color: var(--gold);
+}
+
+.guided-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.guided-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--green);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.guided-card.completed .guided-num {
+  background: var(--gold);
+}
+
+.guided-info h4 {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.guided-info p {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.guided-arrow {
+  color: var(--text-dim);
+  font-size: 1.3rem;
+}
+
+/* ===== GAME SCREEN ===== */
+.game-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 12px 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 58px);
+}
+
+.game-info-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.game-info-bar .contract {
+  color: var(--gold);
+}
+
+.game-info-bar .trick-count {
+  color: var(--text-dim);
+}
+
+/* Dummy hand (North) */
+.dummy-section {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.dummy-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+.dummy-hand {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.dummy-hand .hand-card {
+  width: 44px;
+  height: 62px;
+}
+
+.dummy-hand .hand-card .card-rank { font-size: 0.9rem; }
+.dummy-hand .hand-card .card-suit { font-size: 1.1rem; }
+
+/* Table area */
+.table-area {
+  background: #0d3320;
+  border-radius: 16px;
+  padding: 16px;
+  margin: 8px 0;
+  position: relative;
+}
+
+.table-grid {
+  display: grid;
+  grid-template-areas:
+    ". north ."
+    "west center east"
+    ". south .";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 6px;
+  align-items: center;
+  justify-items: center;
+  min-height: 160px;
+}
+
+.seat { text-align: center; }
+.seat.north { grid-area: north; }
+.seat.south { grid-area: south; }
+.seat.east { grid-area: east; }
+.seat.west { grid-area: west; }
+.seat.center { grid-area: center; }
+
+.seat-label {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.seat-label.active {
+  color: var(--green);
+}
+
+.played-card {
+  width: 48px;
+  height: 66px;
+  background: white;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  border: 2px solid #ddd;
+}
+
+.played-card .card-rank { font-size: 0.95rem; font-weight: 900; line-height: 1; }
+.played-card .card-suit { font-size: 1.1rem; line-height: 1; }
+.played-card.red { color: var(--suit-red); }
+.played-card.black { color: var(--suit-black); }
+
+.empty-slot {
+  width: 48px;
+  height: 66px;
+  border: 2px dashed rgba(255,255,255,0.15);
+  border-radius: 6px;
+}
+
+.center-info {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  font-weight: 800;
+  text-align: center;
+}
+
+/* Opponent card backs */
+.card-back {
+  width: 28px;
+  height: 38px;
+  background: linear-gradient(135deg, #2a4a6a, #1a3a5a);
+  border-radius: 4px;
+  border: 1px solid #3a5a7a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  color: #4a6a8a;
+}
+
+/* Score bar */
+.score-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  margin: 6px 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.score-us { color: var(--green); }
+.score-contract { color: var(--gold); }
+.score-them { color: var(--red); }
+
+/* Player hand (South) */
+.player-section {
+  margin-top: auto;
+  text-align: center;
+  padding-bottom: 12px;
+}
+
+.player-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.player-hand {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.hand-card {
+  width: 52px;
+  height: 72px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 3px solid #ccc;
+  transition: all 0.2s;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.hand-card .card-rank { font-size: 1rem; font-weight: 900; line-height: 1; }
+.hand-card .card-suit { font-size: 1.2rem; line-height: 1; }
+.hand-card.red { color: var(--suit-red); }
+.hand-card.black { color: var(--suit-black); }
+
+/* Card ratings */
+.hand-card.rate-best {
+  border-color: var(--green);
+  box-shadow: 0 0 8px rgba(88, 204, 2, 0.3), 0 3px 8px rgba(0,0,0,0.3);
+}
+
+.hand-card.rate-okay {
+  border-color: var(--gold);
+}
+
+.hand-card.rate-bad {
+  border-color: var(--red);
+  opacity: 0.65;
+}
+
+.hand-card.rate-illegal {
+  border-color: #555;
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.hand-card .star-badge {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 16px;
+  height: 16px;
+  background: var(--green);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #000;
+  font-weight: bold;
+}
+
+.hand-card.selected {
+  transform: translateY(-10px);
+  border-color: var(--blue);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+}
+
+.hand-card:hover:not(.rate-illegal) {
+  transform: translateY(-6px);
+}
+
+/* Play button */
+.play-btn-container {
+  margin-top: 10px;
+}
+
+.play-btn {
+  padding: 12px 40px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--green);
+  color: white;
+  box-shadow: 0 4px 0 var(--green-dark);
+  transition: all 0.15s;
+}
+
+.play-btn:active {
+  box-shadow: 0 2px 0 var(--green-dark);
+  transform: translateY(2px);
+}
+
+.play-btn:disabled {
+  background: var(--bg-card);
+  color: var(--gray-dark);
+  box-shadow: 0 4px 0 #2a3a44;
+  cursor: not-allowed;
+}
+
+/* ===== TRICK REVIEW PANEL ===== */
+.review-overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  animation: slideUp 0.3s ease-out;
+}
+
+.review-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 199;
+}
+
+.review-panel {
+  background: var(--bg-light);
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px 32px;
+  position: relative;
+  z-index: 200;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.review-header {
+  font-size: 1.1rem;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.review-header.won { color: var(--green); }
+.review-header.lost { color: var(--red); }
+
+.review-body {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.review-continue {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: uppercase;
+  background: var(--blue);
+  color: white;
+  box-shadow: 0 4px 0 var(--blue-dark);
+}
+
+.review-continue:active {
+  box-shadow: 0 2px 0 var(--blue-dark);
+  transform: translateY(2px);
+}
+
+/* ===== RESULT SCREEN ===== */
+.result-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.result-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+
+.result-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.result-subtitle {
+  color: var(--text-dim);
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+.result-stats {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.result-stat {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 14px 18px;
+  min-width: 80px;
+}
+
+.result-stat .val {
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.result-stat .label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+/* Key moments */
+.key-moments {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.key-moments h3 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: var(--gold);
+}
+
+.moment-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.moment-card:hover {
+  border-color: var(--blue);
+}
+
+.moment-card.good { border-left: 3px solid var(--green); }
+.moment-card.bad { border-left: 3px solid var(--red); }
+
+.moment-trick {
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.moment-text {
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.result-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  transition: all 0.15s;
+}
+
+.result-btn.primary {
+  background: var(--green);
+  color: white;
+  box-shadow: 0 4px 0 var(--green-dark);
+}
+
+.result-btn.secondary {
+  background: var(--bg-card);
+  color: var(--text);
+  box-shadow: 0 4px 0 #1a2a33;
+}
+
+.result-btn:active {
+  transform: translateY(2px);
+}
+
+/* ===== REPLAY SCREEN ===== */
+.replay-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.replay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.replay-title {
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.replay-trick-strip {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.replay-trick-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.replay-trick-dot.active {
+  border-color: var(--blue);
+  background: rgba(28, 176, 246, 0.2);
+}
+
+.replay-trick-dot.won { color: var(--green); }
+.replay-trick-dot.lost { color: var(--red); }
+
+.replay-cards {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.replay-card-slot {
+  text-align: center;
+}
+
+.replay-card-slot .seat-name {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.replay-card-slot .played-card.winner {
+  border-color: var(--gold);
+  box-shadow: 0 0 8px rgba(255, 200, 0, 0.4);
+}
+
+.replay-commentary {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 16px;
+  margin: 16px 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.replay-nav {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.replay-nav-btn {
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  background: var(--bg-card);
+  color: var(--text);
+  transition: all 0.15s;
+}
+
+.replay-nav-btn:hover { background: rgba(28, 176, 246, 0.2); }
+.replay-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 380px) {
+  .hand-card { width: 44px; height: 62px; }
+  .hand-card .card-rank { font-size: 0.85rem; }
+  .hand-card .card-suit { font-size: 1rem; }
+  .dummy-hand .hand-card { width: 36px; height: 52px; }
+  .dummy-hand .hand-card .card-rank { font-size: 0.75rem; }
+  .dummy-hand .hand-card .card-suit { font-size: 0.9rem; }
+  .played-card { width: 40px; height: 56px; }
+}
+
+/* Safe area for notched phones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .player-section { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+}
+</style>
+</head>
+<body>
+```
+
+- [ ] **Step 2: Add HTML screen containers**
+
+After the `</style></head><body>` tag, add:
+
+```html
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="top-bar-left">
+    <div class="top-bar-title">Bridge Play</div>
+  </div>
+  <div class="top-bar-stats">
+    <div class="stat-item"><span style="color: var(--gold)">⚡</span> <span id="xpCount">0</span></div>
+  </div>
+</div>
+
+<!-- MENU SCREEN -->
+<div id="menuScreen" class="screen active"></div>
+
+<!-- GUIDED LIST SCREEN -->
+<div id="guidedScreen" class="screen"></div>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="screen"></div>
+
+<!-- RESULT SCREEN -->
+<div id="resultScreen" class="screen"></div>
+
+<!-- REPLAY SCREEN -->
+<div id="replayScreen" class="screen"></div>
+
+<!-- REVIEW PANEL (trick review slide-up) -->
+<div id="reviewOverlay" style="display:none">
+  <div class="review-backdrop" onclick="dismissReview()"></div>
+  <div class="review-overlay">
+    <div class="review-panel">
+      <div class="review-header" id="reviewHeader"></div>
+      <div class="review-body" id="reviewBody"></div>
+      <button class="review-continue" onclick="dismissReview()">CONTINUE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// JavaScript will go here (Tasks 2-8)
+</script>
+</body>
+</html>
+```
+
+- [ ] **Step 3: Verify the file loads**
+
+Open `bridge-play/index.html` in a browser. You should see a dark background with the "Bridge Play" top bar and XP counter. No interactivity yet.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add bridge-play/index.html
+git commit -m "feat(bridge-play): add HTML shell and CSS foundation"
+```
+
+---
+
+### Task 2: State, Constants, and Card Helpers
+
+**Files:**
+- Modify: `bridge-play/index.html` (inside `<script>` tag)
+
+Add the state management, card constants, and helper functions.
+
+- [ ] **Step 1: Add constants and state**
+
+Replace the `// JavaScript will go here (Tasks 2-8)` comment inside the `<script>` tag with:
+
+```javascript
+// ===========================
+// CONSTANTS
+// ===========================
+const SUITS = { S: '♠', H: '♥', D: '♦', C: '♣' };
+const SUIT_COLORS = { S: 'black', H: 'red', D: 'red', C: 'black' };
+const SUIT_NAMES = { S: 'Spades', H: 'Hearts', D: 'Diamonds', C: 'Clubs' };
+const SEATS = ['N', 'E', 'S', 'W'];
+const SEAT_NAMES = { N: 'North', E: 'East', S: 'South', W: 'West' };
+const RANK_ORDER = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const RANK_VAL = {};
+RANK_ORDER.forEach((r, i) => RANK_VAL[r] = i);
+
+// ===========================
+// STATE
+// ===========================
+const state = {
+  xp: 0,
+  handsPlayed: 0,
+  contractsMade: 0,
+  totalOptimal: 0,
+  totalPlays: 0,
+  completedGuided: [],
+  biddingUnlocked: false,
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('bridgePlay');
+    if (saved) Object.assign(state, JSON.parse(saved));
+    // Sync XP from bridge tutor
+    const tutorSaved = localStorage.getItem('bridgeTutor');
+    if (tutorSaved) {
+      const tutor = JSON.parse(tutorSaved);
+      if (tutor.xp > state.xp) state.xp = tutor.xp;
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('bridgePlay', JSON.stringify(state));
+    // Also sync XP back to bridge tutor
+    try {
+      const tutorSaved = localStorage.getItem('bridgeTutor');
+      if (tutorSaved) {
+        const tutor = JSON.parse(tutorSaved);
+        tutor.xp = state.xp;
+        localStorage.setItem('bridgeTutor', JSON.stringify(tutor));
+      }
+    } catch(e2) {}
+  } catch(e) {}
+}
+
+// ===========================
+// GAME STATE
+// ===========================
+let game = {
+  mode: null,           // 'guided' or 'free'
+  guidedIdx: null,
+  hands: { N: [], E: [], S: [], W: [] },
+  originalHands: { N: [], E: [], S: [], W: [] }, // for replay
+  trump: null,
+  contract: '',
+  declarer: 'S',
+  dummy: 'N',
+  currentTrick: [],
+  leader: 'W',
+  turn: 'W',
+  tricksNS: 0,
+  tricksEW: 0,
+  trickNum: 1,
+  target: 0,
+  phase: 'play',        // 'play', 'reviewing', 'done'
+  selectedCard: null,    // {seat, idx}
+  trickHistory: [],      // [{cards: [{seat,rank,suit}], winner, review}]
+  playerRatings: [],     // [{cardIdx, rating, reason}] per turn
+  playerChoices: [],     // what the player actually played each trick
+};
+
+// ===========================
+// CARD HELPERS
+// ===========================
+function cardHTML(rank, suit) {
+  const s = SUITS[suit] || suit;
+  const c = SUIT_COLORS[suit] || 'black';
+  return `<div class="played-card ${c}"><span class="card-rank">${rank}</span><span class="card-suit">${s}</span></div>`;
+}
+
+function suitSpan(suit) {
+  const syms = { S: '♠', H: '♥', D: '♦', C: '♣', NT: 'NT' };
+  return syms[suit] || suit;
+}
+
+function nextSeat(seat) {
+  return SEATS[(SEATS.indexOf(seat) + 1) % 4];
+}
+
+function partnerOf(seat) {
+  const partners = { N: 'S', S: 'N', E: 'W', W: 'E' };
+  return partners[seat];
+}
+
+function isPlayerControlled(seat) {
+  return seat === 'S' || seat === game.dummy;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function sortHand(hand) {
+  const suitOrder = { S: 0, H: 1, D: 2, C: 3 };
+  hand.sort((a, b) => {
+    if (suitOrder[a.s] !== suitOrder[b.s]) return suitOrder[a.s] - suitOrder[b.s];
+    return RANK_VAL[b.r] - RANK_VAL[a.r];
+  });
+}
+
+function sortAllHands() {
+  SEATS.forEach(seat => sortHand(game.hands[seat]));
+}
+
+function suitOfLed() {
+  return game.currentTrick.length > 0 ? game.currentTrick[0].suit : null;
+}
+
+function canPlayCard(seat, card) {
+  if (game.phase !== 'play') return false;
+  if (game.turn !== seat) return false;
+  const ledSuit = suitOfLed();
+  if (!ledSuit) return true;
+  const hasSuit = game.hands[seat].some(c => c.s === ledSuit);
+  if (hasSuit) return card.s === ledSuit;
+  return true;
+}
+
+function getPlayableCards(seat) {
+  return game.hands[seat].filter(c => canPlayCard(seat, c));
+}
+
+function trickWinner() {
+  const ledSuit = game.currentTrick[0].suit;
+  let best = game.currentTrick[0];
+  for (let i = 1; i < game.currentTrick.length; i++) {
+    const card = game.currentTrick[i];
+    if (game.trump && card.suit === game.trump && best.suit !== game.trump) {
+      best = card;
+    } else if (card.suit === best.suit && RANK_VAL[card.rank] > RANK_VAL[best.rank]) {
+      best = card;
+    }
+  }
+  return best.seat;
+}
+
+function trickCurrentBest() {
+  if (game.currentTrick.length === 0) return null;
+  let best = game.currentTrick[0];
+  for (let i = 1; i < game.currentTrick.length; i++) {
+    const card = game.currentTrick[i];
+    if (game.trump && card.suit === game.trump && best.suit !== game.trump) {
+      best = card;
+    } else if (card.suit === best.suit && RANK_VAL[card.rank] > RANK_VAL[best.rank]) {
+      best = card;
+    }
+  }
+  return best;
+}
+
+function wouldBeat(card, best) {
+  if (!best) return true;
+  if (game.trump && card.suit === game.trump && best.suit !== game.trump) return true;
+  if (card.suit === best.suit && RANK_VAL[card.rank] > RANK_VAL[best.rank]) return true;
+  return false;
+}
+
+// ===========================
+// SCREEN MANAGEMENT
+// ===========================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(name + 'Screen').classList.add('active');
+}
+
+function updateXP() {
+  document.getElementById('xpCount').textContent = state.xp;
+}
+```
+
+- [ ] **Step 2: Verify no JS errors**
+
+Open the file in a browser and check the console. There should be no errors. The page should still show the dark background and top bar.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add bridge-play/index.html
+git commit -m "feat(bridge-play): add state management, constants, and card helpers"
+```
+
+---
+
+### Task 3: Menu Screen + Guided Hands Data
+
+**Files:**
+- Modify: `bridge-play/index.html` (inside `<script>` tag, after the screen management section)
+
+- [ ] **Step 1: Add guided hands data**
+
+Add after the `updateXP()` function:
+
+```javascript
+// ===========================
+// GUIDED HANDS
+// ===========================
+const guidedHands = [
+  {
+    title: "Cash Your Winners",
+    desc: "Play your Aces and Kings to win tricks",
+    contract: "1NT", trump: null, target: 7, declarer: 'S',
+    concept: "In No Trump, your Aces and Kings are guaranteed winners. Play them!",
+    hands: {
+      S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'5',s:'H'},{r:'4',s:'H'},{r:'A',s:'D'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'K',s:'C'},{r:'4',s:'C'},{r:'3',s:'C'}],
+      N: [{r:'J',s:'S'},{r:'10',s:'S'},{r:'9',s:'S'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'A',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'},{r:'10',s:'C'}],
+      E: [{r:'8',s:'S'},{r:'7',s:'S'},{r:'6',s:'H'},{r:'3',s:'H'},{r:'10',s:'D'},{r:'9',s:'D'},{r:'5',s:'D'},{r:'4',s:'D'},{r:'9',s:'C'},{r:'8',s:'C'},{r:'7',s:'C'},{r:'6',s:'C'},{r:'5',s:'C'}],
+      W: [{r:'6',s:'S'},{r:'5',s:'S'},{r:'4',s:'S'},{r:'3',s:'S'},{r:'2',s:'S'},{r:'9',s:'H'},{r:'8',s:'H'},{r:'7',s:'H'},{r:'2',s:'H'},{r:'8',s:'D'},{r:'3',s:'D'},{r:'2',s:'D'},{r:'2',s:'C'}],
+    },
+  },
+  {
+    title: "Follow Suit",
+    desc: "Practice the most important rule in bridge",
+    contract: "2S", trump: 'S', target: 8, declarer: 'S',
+    concept: "You MUST play a card of the suit that was led, if you have one.",
+    hands: {
+      S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'10',s:'S'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'A',s:'D'},{r:'K',s:'D'},{r:'5',s:'D'},{r:'4',s:'D'},{r:'3',s:'C'},{r:'2',s:'C'}],
+      N: [{r:'9',s:'S'},{r:'8',s:'S'},{r:'7',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'}],
+      E: [{r:'6',s:'S'},{r:'5',s:'S'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'9',s:'H'},{r:'8',s:'D'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'10',s:'C'},{r:'9',s:'C'},{r:'8',s:'C'},{r:'7',s:'C'},{r:'6',s:'C'}],
+      W: [{r:'4',s:'S'},{r:'3',s:'S'},{r:'2',s:'S'},{r:'8',s:'H'},{r:'7',s:'H'},{r:'6',s:'H'},{r:'5',s:'H'},{r:'4',s:'H'},{r:'9',s:'D'},{r:'3',s:'D'},{r:'2',s:'D'},{r:'5',s:'C'},{r:'4',s:'C'}],
+    },
+  },
+  {
+    title: "Using Trump",
+    desc: "Trump the opponents' winners when you're void",
+    contract: "4H", trump: 'H', target: 10, declarer: 'S',
+    concept: "When you have no cards in the led suit, you can play a trump card to win the trick!",
+    hands: {
+      S: [{r:'A',s:'H'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'9',s:'H'},{r:'A',s:'S'},{r:'2',s:'S'},{r:'A',s:'D'},{r:'2',s:'D'},{r:'8',s:'C'},{r:'4',s:'C'},{r:'2',s:'C'}],
+      N: [{r:'8',s:'H'},{r:'7',s:'H'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'}],
+      E: [{r:'6',s:'H'},{r:'5',s:'S'},{r:'4',s:'S'},{r:'3',s:'S'},{r:'9',s:'D'},{r:'8',s:'D'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'10',s:'C'},{r:'9',s:'C'},{r:'7',s:'C'},{r:'6',s:'C'},{r:'5',s:'C'}],
+      W: [{r:'5',s:'H'},{r:'4',s:'H'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'10',s:'S'},{r:'9',s:'S'},{r:'8',s:'S'},{r:'7',s:'S'},{r:'6',s:'S'},{r:'5',s:'D'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'3',s:'C'}],
+    },
+  },
+  {
+    title: "Save Your High Cards",
+    desc: "Don't waste a King when a 2 will do",
+    contract: "1NT", trump: null, target: 7, declarer: 'S',
+    concept: "If a low card will win (or lose) the trick anyway, save your high cards for later.",
+    hands: {
+      S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'2',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'A',s:'D'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'5',s:'C'},{r:'4',s:'C'}],
+      N: [{r:'J',s:'S'},{r:'10',s:'S'},{r:'9',s:'S'},{r:'8',s:'S'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'}],
+      E: [{r:'7',s:'S'},{r:'6',s:'S'},{r:'5',s:'S'},{r:'9',s:'H'},{r:'8',s:'H'},{r:'7',s:'H'},{r:'6',s:'H'},{r:'10',s:'D'},{r:'9',s:'D'},{r:'8',s:'D'},{r:'J',s:'C'},{r:'10',s:'C'},{r:'9',s:'C'}],
+      W: [{r:'4',s:'S'},{r:'3',s:'S'},{r:'5',s:'H'},{r:'4',s:'H'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'5',s:'D'},{r:'2',s:'D'},{r:'8',s:'C'},{r:'7',s:'C'},{r:'6',s:'C'},{r:'3',s:'C'},{r:'2',s:'C'}],
+    },
+  },
+  {
+    title: "Lead From Length",
+    desc: "Establish your long suit in No Trump",
+    contract: "3NT", trump: null, target: 9, declarer: 'S',
+    concept: "In NT, lead your longest suit repeatedly. Eventually your small cards become winners when opponents run out.",
+    hands: {
+      S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'10',s:'S'},{r:'A',s:'H'},{r:'3',s:'H'},{r:'A',s:'D'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'A',s:'C'},{r:'4',s:'C'},{r:'3',s:'C'}],
+      N: [{r:'9',s:'S'},{r:'8',s:'S'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'},{r:'10',s:'C'}],
+      E: [{r:'7',s:'S'},{r:'6',s:'S'},{r:'10',s:'H'},{r:'9',s:'H'},{r:'8',s:'H'},{r:'9',s:'D'},{r:'8',s:'D'},{r:'7',s:'D'},{r:'9',s:'C'},{r:'8',s:'C'},{r:'7',s:'C'},{r:'6',s:'C'},{r:'5',s:'C'}],
+      W: [{r:'5',s:'S'},{r:'4',s:'S'},{r:'3',s:'S'},{r:'2',s:'S'},{r:'7',s:'H'},{r:'6',s:'H'},{r:'5',s:'H'},{r:'4',s:'H'},{r:'2',s:'H'},{r:'6',s:'D'},{r:'5',s:'D'},{r:'2',s:'D'},{r:'2',s:'C'}],
+    },
+  },
+  {
+    title: "Second Hand Low",
+    desc: "Play low when you're second to play",
+    contract: "1NT", trump: null, target: 7, declarer: 'S',
+    concept: "When an opponent leads and you play second, usually play LOW. Save your high cards to capture theirs later.",
+    hands: {
+      S: [{r:'A',s:'S'},{r:'Q',s:'S'},{r:'5',s:'S'},{r:'4',s:'S'},{r:'A',s:'H'},{r:'Q',s:'H'},{r:'5',s:'H'},{r:'A',s:'D'},{r:'Q',s:'D'},{r:'5',s:'D'},{r:'A',s:'C'},{r:'Q',s:'C'},{r:'5',s:'C'}],
+      N: [{r:'K',s:'S'},{r:'J',s:'S'},{r:'3',s:'S'},{r:'K',s:'H'},{r:'J',s:'H'},{r:'3',s:'H'},{r:'K',s:'D'},{r:'J',s:'D'},{r:'3',s:'D'},{r:'K',s:'C'},{r:'J',s:'C'},{r:'3',s:'C'},{r:'2',s:'C'}],
+      E: [{r:'10',s:'S'},{r:'9',s:'S'},{r:'8',s:'S'},{r:'10',s:'H'},{r:'9',s:'H'},{r:'8',s:'H'},{r:'10',s:'D'},{r:'9',s:'D'},{r:'8',s:'D'},{r:'10',s:'C'},{r:'9',s:'C'},{r:'8',s:'C'},{r:'7',s:'C'}],
+      W: [{r:'7',s:'S'},{r:'6',s:'S'},{r:'2',s:'S'},{r:'7',s:'H'},{r:'6',s:'H'},{r:'2',s:'H'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'2',s:'D'},{r:'6',s:'C'},{r:'4',s:'C'},{r:'4',s:'H'},{r:'4',s:'D'}],
+    },
+  },
+  {
+    title: "Third Hand High",
+    desc: "Play high when partner leads and you're third",
+    contract: "1NT", trump: null, target: 7, declarer: 'S',
+    concept: "When your partner leads and you play third, play HIGH to try to win the trick for your side.",
+    hands: {
+      S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'5',s:'S'},{r:'4',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'5',s:'D'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'5',s:'C'},{r:'4',s:'C'}],
+      N: [{r:'J',s:'S'},{r:'10',s:'S'},{r:'9',s:'S'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'9',s:'H'},{r:'A',s:'D'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'}],
+      E: [{r:'8',s:'S'},{r:'7',s:'S'},{r:'6',s:'S'},{r:'8',s:'H'},{r:'7',s:'H'},{r:'6',s:'H'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'9',s:'D'},{r:'10',s:'C'},{r:'9',s:'C'},{r:'8',s:'C'},{r:'7',s:'C'}],
+      W: [{r:'3',s:'S'},{r:'2',s:'S'},{r:'4',s:'H'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'8',s:'D'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'2',s:'D'},{r:'6',s:'C'},{r:'3',s:'C'},{r:'2',s:'C'},{r:'5',s:'H'}],
+    },
+  },
+  {
+    title: "The Simple Finesse",
+    desc: "Try to trap the opponent's King",
+    contract: "3NT", trump: null, target: 9, declarer: 'S',
+    concept: "With AQ in your hand, lead toward them from dummy. If the King is on your left, your Queen wins!",
+    hands: {
+      S: [{r:'A',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'10',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'5',s:'H'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'2',s:'D'},{r:'A',s:'C'},{r:'4',s:'C'},{r:'3',s:'C'}],
+      N: [{r:'5',s:'S'},{r:'4',s:'S'},{r:'3',s:'S'},{r:'2',s:'S'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'A',s:'D'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'2',s:'C'}],
+      E: [{r:'K',s:'S'},{r:'9',s:'S'},{r:'8',s:'S'},{r:'9',s:'H'},{r:'8',s:'H'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'9',s:'D'},{r:'J',s:'C'},{r:'10',s:'C'},{r:'9',s:'C'},{r:'8',s:'C'},{r:'7',s:'C'}],
+      W: [{r:'7',s:'S'},{r:'6',s:'S'},{r:'7',s:'H'},{r:'6',s:'H'},{r:'4',s:'H'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'8',s:'D'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'5',s:'D'},{r:'6',s:'C'},{r:'5',s:'C'}],
+    },
+  },
+];
+```
+
+- [ ] **Step 2: Add menu rendering and guided list rendering**
+
+Add after the guided hands data:
+
+```javascript
+// ===========================
+// MENU SCREEN
+// ===========================
+function renderMenu() {
+  const accuracy = state.totalPlays > 0 ? Math.round((state.totalOptimal / state.totalPlays) * 100) : 0;
+  const madeRate = state.handsPlayed > 0 ? Math.round((state.contractsMade / state.handsPlayed) * 100) : 0;
+  const biddingLocked = state.handsPlayed < 10;
+
+  document.getElementById('menuScreen').innerHTML = `
+    <div class="menu-container">
+      <div class="menu-header">
+        <h2>Bridge Play Tutor</h2>
+        <p>Practice playing bridge with hints</p>
+      </div>
+
+      ${state.handsPlayed > 0 ? `
+      <div class="menu-stats">
+        <div class="menu-stat">
+          <div class="val">${state.handsPlayed}</div>
+          <div class="label">Hands</div>
+        </div>
+        <div class="menu-stat">
+          <div class="val" style="color:var(--green)">${madeRate}%</div>
+          <div class="label">Made</div>
+        </div>
+        <div class="menu-stat">
+          <div class="val" style="color:var(--blue)">${accuracy}%</div>
+          <div class="label">Accuracy</div>
+        </div>
+      </div>
+      ` : ''}
+
+      <div class="mode-card" onclick="showGuidedList()">
+        <div class="mode-icon">🎯</div>
+        <div class="mode-info">
+          <h3>Guided Hands</h3>
+          <p>Curated deals that teach specific skills. Great place to start!</p>
+        </div>
+      </div>
+
+      <div class="mode-card" onclick="startFreePlay()">
+        <div class="mode-icon">🎲</div>
+        <div class="mode-info">
+          <h3>Free Play</h3>
+          <p>Random deals with random contracts. Full 13-trick game!</p>
+        </div>
+      </div>
+
+      <div class="mode-card locked">
+        <div class="mode-icon">🔒</div>
+        <div class="mode-info">
+          <h3>Bidding Mode</h3>
+          <p>${biddingLocked ? `Play ${10 - state.handsPlayed} more hand${10 - state.handsPlayed !== 1 ? 's' : ''} to unlock` : 'Coming soon!'}</p>
+        </div>
+      </div>
+
+      <div class="cross-link">
+        <a href="../bridge-tutor/">Need to learn the basics? Bridge Tutor →</a>
+      </div>
+    </div>
+  `;
+}
+
+function showGuidedList() {
+  let html = `
+    <div class="guided-list">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <button class="back-btn" onclick="showScreen('menu');renderMenu()">←</button>
+        <h2 style="font-size:1.2rem;font-weight:900">Guided Hands</h2>
+      </div>
+  `;
+
+  guidedHands.forEach((h, i) => {
+    const done = state.completedGuided.includes(i);
+    const trumpLabel = h.trump ? suitSpan(h.trump) : 'NT';
+    html += `
+      <div class="guided-card ${done ? 'completed' : ''}" onclick="startGuided(${i})">
+        <div class="guided-left">
+          <div class="guided-num">${done ? '✓' : (i + 1)}</div>
+          <div class="guided-info">
+            <h4>${h.title}</h4>
+            <p>${h.desc} · ${h.contract.replace('S','♠').replace('H','♥').replace('D','♦').replace('C','♣')}</p>
+          </div>
+        </div>
+        <div class="guided-arrow">›</div>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  document.getElementById('guidedScreen').innerHTML = html;
+  showScreen('guided');
+}
+```
+
+- [ ] **Step 3: Add init code at the bottom of the script**
+
+```javascript
+// ===========================
+// INIT
+// ===========================
+loadState();
+updateXP();
+renderMenu();
+```
+
+- [ ] **Step 4: Verify menu renders**
+
+Open the page. You should see the menu with "Guided Hands", "Free Play", and locked "Bidding Mode" cards. Clicking "Guided Hands" should show the list of 8 hands.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add bridge-play/index.html
+git commit -m "feat(bridge-play): add menu screen and guided hands data"
+```
+
+---
+
+### Task 4: Card Analysis Engine
+
+**Files:**
+- Modify: `bridge-play/index.html` (inside `<script>`, add before the MENU SCREEN section)
+
+The analysis engine rates each playable card for the player.
+
+- [ ] **Step 1: Add the analysis engine**
+
+Add this section after the `updateXP()` function and before the `// GUIDED HANDS` section:
+
+```javascript
+// ===========================
+// CARD ANALYSIS ENGINE
+// ===========================
+
+// Returns [{card, rating, reason}] for each card in seat's hand
+// rating: 'best', 'okay', 'bad', 'illegal'
+function analyzeCards(seat) {
+  const hand = game.hands[seat];
+  const playable = getPlayableCards(seat);
+  const ledSuit = suitOfLed();
+  const isLeading = game.currentTrick.length === 0;
+  const position = game.currentTrick.length; // 0=leading, 1=2nd, 2=3rd, 3=4th
+  const currentBest = trickCurrentBest();
+
+  const results = hand.map(card => {
+    const legal = playable.some(p => p.r === card.r && p.s === card.s);
+    if (!legal) return { card, rating: 'illegal', reason: 'Must follow suit' };
+    return { card, rating: 'okay', reason: '' };
+  });
+
+  if (playable.length <= 1) {
+    // Only one legal play — it's the best by default
+    results.forEach(r => { if (r.rating !== 'illegal') r.rating = 'best'; r.reason = 'Only legal play'; });
+    return results;
+  }
+
+  // Score each playable card
+  const scored = [];
+  playable.forEach(card => {
+    let score = 50; // neutral
+    let reason = '';
+
+    if (isLeading) {
+      // LEADING
+      const suitCards = hand.filter(c => c.s === card.s);
+      const isAce = card.r === 'A';
+      const isUnsupportedHonor = (card.r === 'K' || card.r === 'Q') && suitCards.length <= 2;
+
+      if (!game.trump && isAce) {
+        score = 90;
+        reason = 'Cash your Ace — it\'s a sure winner';
+      } else if (suitCards.length >= 4 && RANK_VAL[card.r] <= RANK_VAL['5']) {
+        score = 85;
+        reason = 'Lead low from your longest suit to establish it';
+      } else if (suitCards.length >= 4 && isAce) {
+        score = 80;
+        reason = 'Lead Ace from long suit — cash the winner then continue the suit';
+      } else if (isUnsupportedHonor) {
+        score = 20;
+        reason = 'Avoid leading unsupported honors — they\'re easily captured';
+      } else if (RANK_VAL[card.r] <= RANK_VAL['5']) {
+        score = 60;
+        reason = 'A safe low lead';
+      } else {
+        score = 40;
+        reason = 'This lead gives away a high card';
+      }
+    } else {
+      // FOLLOWING
+      const canWin = wouldBeat(card, currentBest);
+      const isPartnerWinning = currentBest &&
+        (currentBest.seat === partnerOf(seat));
+      const isLastToPlay = position === 3;
+      const isTrumping = ledSuit && card.s !== ledSuit && game.trump && card.s === game.trump;
+
+      if (position === 1) {
+        // SECOND HAND — play low usually
+        if (RANK_VAL[card.r] <= RANK_VAL['5'] && card.s === ledSuit) {
+          score = 85;
+          reason = 'Second hand low — save your high cards';
+        } else if (card.r === 'A' && card.s === ledSuit) {
+          score = 40;
+          reason = 'Playing Ace second hand wastes it — play low instead';
+        } else if (canWin && card.s === ledSuit) {
+          // Playing high second hand is usually bad
+          const lowestInSuit = playable.filter(c => c.s === ledSuit).sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
+          if (card.r === lowestInSuit.r) {
+            score = 85;
+            reason = 'Second hand low — good play';
+          } else {
+            score = 30;
+            reason = 'Playing high second hand is usually wasteful';
+          }
+        } else if (isTrumping && !isPartnerWinning) {
+          score = 70;
+          reason = 'Trumping when void — can win the trick';
+        }
+      } else if (position === 2) {
+        // THIRD HAND — play high
+        if (canWin && !isPartnerWinning) {
+          // Find cheapest winner
+          const winners = playable.filter(c => wouldBeat(c, currentBest));
+          const cheapestWinner = winners.sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
+          if (card.r === cheapestWinner.r && card.s === cheapestWinner.s) {
+            score = 90;
+            reason = 'Third hand high — win the trick cheaply';
+          } else if (RANK_VAL[card.r] > RANK_VAL[cheapestWinner.r]) {
+            score = 40;
+            reason = 'Can win cheaper — save this high card';
+          } else {
+            score = 30;
+            reason = 'This won\'t win the trick';
+          }
+        } else if (isPartnerWinning) {
+          // Partner is winning — play low
+          const lowest = playable.sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
+          if (card.r === lowest.r && card.s === lowest.s) {
+            score = 85;
+            reason = 'Partner is winning — play low and save your cards';
+          } else {
+            score = 30;
+            reason = 'Partner is winning — don\'t waste a high card';
+          }
+        } else {
+          // Can't win — play lowest
+          const lowest = playable.sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
+          if (card.r === lowest.r && card.s === lowest.s) {
+            score = 80;
+            reason = 'Can\'t win — play your lowest card';
+          } else {
+            score = 20;
+            reason = 'Can\'t win and wasting a high card';
+          }
+        }
+      } else if (isLastToPlay) {
+        // FOURTH HAND — play cheapest winner, or lowest loser
+        if (canWin) {
+          const winners = playable.filter(c => wouldBeat(c, currentBest));
+          const cheapestWinner = winners.sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
+          if (card.r === cheapestWinner.r && card.s === cheapestWinner.s) {
+            score = 95;
+            reason = 'Win the trick with your cheapest winner';
+          } else {
+            score = 50;
+            reason = 'Can win cheaper — save this card';
+          }
+        } else {
+          const lowest = playable.sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
+          if (card.r === lowest.r && card.s === lowest.s) {
+            score = 75;
+            reason = 'Can\'t win — discard your lowest';
+          } else {
+            score = 20;
+            reason = 'Can\'t win — don\'t waste a high card';
+          }
+        }
+      }
+
+      // Trumping adjustments
+      if (isTrumping) {
+        if (isPartnerWinning) {
+          score = 15;
+          reason = 'Don\'t trump when your partner is already winning';
+        } else if (canWin) {
+          const trumpsInHand = hand.filter(c => c.s === game.trump);
+          const lowestTrump = trumpsInHand.sort((a,b) => RANK_VAL[a.r] - RANK_VAL[b.r])[0];
+          if (card.r === lowestTrump.r) {
+            score = 88;
+            reason = 'Trump with your lowest trump — smart play';
+          } else {
+            score = 50;
+            reason = 'Use your lowest trump instead to save the high ones';
+          }
+        }
+      }
+    }
+
+    scored.push({ card, score, reason });
+  });
+
+  // Assign ratings based on scores
+  const maxScore = Math.max(...scored.map(s => s.score));
+
+  scored.forEach(({ card, score, reason }) => {
+    const idx = results.findIndex(r => r.card.r === card.r && r.card.s === card.s);
+    if (idx === -1) return;
+
+    if (score >= maxScore - 5) {
+      results[idx].rating = 'best';
+    } else if (score >= 50) {
+      results[idx].rating = 'okay';
+    } else {
+      results[idx].rating = 'bad';
+    }
+    results[idx].reason = reason;
+  });
+
+  return results;
+}
+
+// Generate a review message after a trick
+function generateTrickReview(trickCards, winner, playerCard, bestRating) {
+  const wonByNS = winner === 'N' || winner === 'S';
+  const playerPlayed = playerCard;
+
+  if (!playerPlayed) {
+    // Player didn't play this trick (AI-only)
+    return wonByNS ? 'Your side won this trick.' : 'They won this trick.';
+  }
+
+  const wasOptimal = bestRating === 'best';
+  const winnerCard = trickCards.find(c => c.seat === winner);
+
+  if (wasOptimal) {
+    const positives = [
+      'Good play!',
+      'Well played!',
+      'Nice choice!',
+      'Smart move!',
+      'Exactly right!',
+    ];
+    const msg = positives[Math.floor(Math.random() * positives.length)];
+    if (wonByNS) {
+      return `${msg} You won with ${winnerCard.rank}${suitSpan(winnerCard.suit)}.`;
+    } else {
+      return `${msg} You played correctly even though they took this one.`;
+    }
+  } else {
+    // Suboptimal play
+    return `${playerPlayed.reason || 'There was a better card to play here.'}`;
+  }
+}
+```
+
+- [ ] **Step 2: Verify no errors**
+
+Open the page and check the browser console. No errors should appear.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add bridge-play/index.html
+git commit -m "feat(bridge-play): add card analysis engine with heuristic ratings"
+```
+
+---
+
+### Task 5: Game Engine (Deal, Play, AI, Trick Flow)
+
+**Files:**
+- Modify: `bridge-play/index.html` (inside `<script>`, add after the menu rendering functions, before INIT)
+
+- [ ] **Step 1: Add the game start functions and AI**
+
+Add before the `// INIT` section:
+
+```javascript
+// ===========================
+// GAME ENGINE
+// ===========================
+
+function initGame(hands, trump, contract, target) {
+  game.hands = {
+    N: hands.N.map(c => ({...c})),
+    E: hands.E.map(c => ({...c})),
+    S: hands.S.map(c => ({...c})),
+    W: hands.W.map(c => ({...c})),
+  };
+  // Deep copy for replay
+  game.originalHands = {
+    N: hands.N.map(c => ({...c})),
+    E: hands.E.map(c => ({...c})),
+    S: hands.S.map(c => ({...c})),
+    W: hands.W.map(c => ({...c})),
+  };
+  game.trump = trump;
+  game.contract = contract;
+  game.declarer = 'S';
+  game.dummy = 'N';
+  game.currentTrick = [];
+  game.leader = 'W'; // left of declarer
+  game.turn = 'W';
+  game.tricksNS = 0;
+  game.tricksEW = 0;
+  game.trickNum = 1;
+  game.target = target;
+  game.phase = 'play';
+  game.selectedCard = null;
+  game.trickHistory = [];
+  game.playerRatings = [];
+  game.playerChoices = [];
+
+  sortAllHands();
+  showScreen('game');
+  renderGame();
+  setTimeout(() => maybeAIPlay(), 500);
+}
+
+function startGuided(idx) {
+  const h = guidedHands[idx];
+  game.mode = 'guided';
+  game.guidedIdx = idx;
+  initGame(h.hands, h.trump, h.contract, h.target);
+}
+
+function startFreePlay() {
+  game.mode = 'free';
+  game.guidedIdx = null;
+
+  const deck = [];
+  ['S','H','D','C'].forEach(s => {
+    RANK_ORDER.forEach(r => deck.push({r, s}));
+  });
+  shuffle(deck);
+
+  const hands = { N: [], E: [], S: [], W: [] };
+  deck.forEach((c, i) => hands[SEATS[i % 4]].push(c));
+
+  const trumpOptions = ['S','H','D','C', null];
+  const trump = trumpOptions[Math.floor(Math.random() * trumpOptions.length)];
+  const level = trump ? (Math.random() < 0.5 ? 2 : 3) : 3;
+  const target = level + 6;
+  const trumpLabel = trump ? SUITS[trump] : 'NT';
+  const contract = `${level}${trumpLabel}`;
+
+  initGame(hands, trump, contract, target);
+}
+
+// AI
+function maybeAIPlay() {
+  if (game.phase !== 'play') return;
+  if (isPlayerControlled(game.turn)) return;
+
+  const playable = getPlayableCards(game.turn);
+  if (playable.length === 0) return;
+
+  let pick;
+  const ledSuit = suitOfLed();
+
+  if (!ledSuit) {
+    // Leading: play low from longest suit
+    const suitCounts = {};
+    game.hands[game.turn].forEach(c => { suitCounts[c.s] = (suitCounts[c.s] || 0) + 1; });
+    let bestSuit = playable[0].s;
+    let bestCount = 0;
+    Object.entries(suitCounts).forEach(([s, n]) => {
+      if (n > bestCount) { bestCount = n; bestSuit = s; }
+    });
+    const inSuit = playable.filter(c => c.s === bestSuit);
+    pick = inSuit[inSuit.length - 1]; // lowest in suit
+  } else {
+    const currentBest = trickCurrentBest();
+    const winners = playable.filter(c => wouldBeat(c, currentBest));
+    if (winners.length > 0) {
+      pick = winners[winners.length - 1]; // cheapest winner
+    } else {
+      pick = playable[playable.length - 1]; // lowest
+    }
+  }
+
+  executePlay(game.turn, pick, null);
+}
+
+function selectCard(seat, idx) {
+  if (game.phase !== 'play') return;
+  if (game.turn !== seat) return;
+
+  const card = game.hands[seat][idx];
+  if (!canPlayCard(seat, card)) return;
+
+  if (game.selectedCard && game.selectedCard.seat === seat && game.selectedCard.idx === idx) {
+    // Double-tap to play
+    const ratings = analyzeCards(seat);
+    const rating = ratings.find(r => r.card.r === card.r && r.card.s === card.s);
+    executePlay(seat, card, rating);
+  } else {
+    game.selectedCard = { seat, idx };
+    renderGame();
+  }
+}
+
+function confirmPlay() {
+  if (!game.selectedCard) return;
+  const { seat, idx } = game.selectedCard;
+  const card = game.hands[seat][idx];
+  const ratings = analyzeCards(seat);
+  const rating = ratings.find(r => r.card.r === card.r && r.card.s === card.s);
+  executePlay(seat, card, rating);
+}
+
+function executePlay(seat, card, rating) {
+  // Track player's choice
+  if (isPlayerControlled(seat)) {
+    game.playerChoices.push({
+      trickNum: game.trickNum,
+      seat,
+      card: { r: card.r, s: card.s },
+      rating: rating ? rating.rating : 'best',
+      reason: rating ? rating.reason : '',
+    });
+  }
+
+  // Remove card from hand
+  const idx = game.hands[seat].findIndex(c => c.r === card.r && c.s === card.s);
+  if (idx === -1) return;
+  game.hands[seat].splice(idx, 1);
+
+  game.currentTrick.push({ seat, rank: card.r, suit: card.s });
+  game.selectedCard = null;
+
+  if (game.currentTrick.length < 4) {
+    game.turn = nextSeat(game.turn);
+    renderGame();
+    setTimeout(() => maybeAIPlay(), 500);
+  } else {
+    // Trick complete
+    const winner = trickWinner();
+    const wonByNS = winner === 'N' || winner === 'S';
+    if (wonByNS) game.tricksNS++; else game.tricksEW++;
+
+    // Find player's play in this trick for review
+    const playerPlay = game.playerChoices.find(p => p.trickNum === game.trickNum);
+    const review = generateTrickReview(
+      game.currentTrick,
+      winner,
+      playerPlay || null,
+      playerPlay ? playerPlay.rating : 'best'
+    );
+
+    game.trickHistory.push({
+      cards: [...game.currentTrick],
+      winner,
+      review,
+      playerWasOptimal: playerPlay ? playerPlay.rating === 'best' : true,
+    });
+
+    // Show trick review
+    game.phase = 'reviewing';
+    renderGame();
+    showTrickReview(game.trickNum, wonByNS, review);
+  }
+}
+
+function showTrickReview(trickNum, wonByNS, review) {
+  const overlay = document.getElementById('reviewOverlay');
+  document.getElementById('reviewHeader').textContent = `Trick ${trickNum} — ${wonByNS ? 'You win!' : 'They win.'}`;
+  document.getElementById('reviewHeader').className = `review-header ${wonByNS ? 'won' : 'lost'}`;
+  document.getElementById('reviewBody').textContent = review;
+  overlay.style.display = 'block';
+}
+
+function dismissReview() {
+  document.getElementById('reviewOverlay').style.display = 'none';
+
+  game.currentTrick = [];
+  game.trickNum++;
+
+  if (game.trickNum > 13 || game.hands.S.length === 0) {
+    game.phase = 'done';
+    showResult();
+  } else {
+    const lastWinner = game.trickHistory[game.trickHistory.length - 1].winner;
+    game.leader = lastWinner;
+    game.turn = lastWinner;
+    game.phase = 'play';
+    renderGame();
+    setTimeout(() => maybeAIPlay(), 500);
+  }
+}
+
+function exitGame() {
+  showScreen('menu');
+  renderMenu();
+}
+```
+
+- [ ] **Step 2: Verify guided hand starts correctly**
+
+Open the page, click "Guided Hands", click the first hand. The game screen won't render yet (we haven't written `renderGame()`) — but there should be no JS errors from the game setup.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add bridge-play/index.html
+git commit -m "feat(bridge-play): add game engine with AI, trick flow, and review triggers"
+```
+
+---
+
+### Task 6: Game Screen Rendering
+
+**Files:**
+- Modify: `bridge-play/index.html` (inside `<script>`, add after `exitGame()` and before `// INIT`)
+
+- [ ] **Step 1: Add the renderGame function**
+
+```javascript
+// ===========================
+// GAME RENDERING
+// ===========================
+function renderGame() {
+  const container = document.getElementById('gameScreen');
+  const trumpLabel = game.trump ? SUITS[game.trump] : 'NT';
+
+  // Played cards in current trick
+  const played = {};
+  game.currentTrick.forEach(p => { played[p.seat] = p; });
+
+  function seatCardHTML(seat) {
+    const p = played[seat];
+    if (p) {
+      const col = SUIT_COLORS[p.suit];
+      return `<div class="played-card ${col}"><span class="card-rank">${p.rank}</span><span class="card-suit">${SUITS[p.suit]}</span></div>`;
+    }
+    return `<div class="empty-slot"></div>`;
+  }
+
+  // Analyze cards for player-controlled seats
+  const isPlayerTurn = game.turn === 'S' && game.phase === 'play';
+  const isDummyTurn = game.turn === game.dummy && game.phase === 'play';
+  const activeSeat = isPlayerTurn ? 'S' : (isDummyTurn ? game.dummy : null);
+  const ratings = activeSeat ? analyzeCards(activeSeat) : [];
+
+  // Dummy hand
+  const dummyHand = game.hands[game.dummy];
+  let dummyHTML = '<div class="dummy-hand">';
+  dummyHand.forEach((card, i) => {
+    const col = SUIT_COLORS[card.s];
+    const playable = isDummyTurn && canPlayCard(game.dummy, card);
+    let ratingClass = '';
+    let starBadge = '';
+    if (isDummyTurn) {
+      const r = ratings.find(r => r.card.r === card.r && r.card.s === card.s);
+      if (r) {
+        ratingClass = `rate-${r.rating}`;
+        if (r.rating === 'best') starBadge = '<div class="star-badge">★</div>';
+      }
+    }
+    const selected = game.selectedCard && game.selectedCard.seat === game.dummy && game.selectedCard.idx === i;
+    dummyHTML += `<div class="hand-card ${col} ${ratingClass} ${selected ? 'selected' : ''}" ${playable ? `onclick="selectCard('${game.dummy}',${i})"` : ''}>
+      <span class="card-rank">${card.r}</span><span class="card-suit">${SUITS[card.s]}</span>${starBadge}</div>`;
+  });
+  dummyHTML += '</div>';
+
+  // Player hand
+  const playerHand = game.hands.S;
+  let playerHTML = '<div class="player-hand">';
+  playerHand.forEach((card, i) => {
+    const col = SUIT_COLORS[card.s];
+    const playable = isPlayerTurn && canPlayCard('S', card);
+    let ratingClass = '';
+    let starBadge = '';
+    if (isPlayerTurn) {
+      const r = ratings.find(r => r.card.r === card.r && r.card.s === card.s);
+      if (r) {
+        ratingClass = `rate-${r.rating}`;
+        if (r.rating === 'best') starBadge = '<div class="star-badge">★</div>';
+      }
+    }
+    const selected = game.selectedCard && game.selectedCard.seat === 'S' && game.selectedCard.idx === i;
+    playerHTML += `<div class="hand-card ${col} ${ratingClass} ${selected ? 'selected' : ''}" ${playable ? `onclick="selectCard('S',${i})"` : ''}>
+      <span class="card-rank">${card.r}</span><span class="card-suit">${SUITS[card.s]}</span>${starBadge}</div>`;
+  });
+  playerHTML += '</div>';
+
+  // Concept message for guided hands
+  let conceptHTML = '';
+  if (game.mode === 'guided' && game.guidedIdx !== null && game.trickNum === 1 && game.currentTrick.length === 0) {
+    const h = guidedHands[game.guidedIdx];
+    conceptHTML = `<div style="background:var(--bg-card);border-radius:12px;padding:12px 16px;margin-bottom:8px;font-size:0.85rem;color:var(--text-dim);line-height:1.4">
+      <span style="color:var(--gold);font-weight:800">💡 ${h.title}:</span> ${h.concept}
+    </div>`;
+  }
+
+  container.innerHTML = `
+    <div class="game-container">
+      <div class="game-info-bar">
+        <button class="back-btn" onclick="exitGame()">←</button>
+        <div class="contract">Contract: ${game.contract}</div>
+        <div class="trick-count">Trick ${game.trickNum}/13</div>
+      </div>
+
+      ${conceptHTML}
+
+      <div class="dummy-section">
+        <div class="dummy-label">
+          Dummy (North)${isDummyTurn ? ' — play a card' : ''}
+        </div>
+        ${dummyHTML}
+      </div>
+
+      <div class="table-area">
+        <div class="table-grid">
+          <div class="seat north">
+            <div class="seat-label ${game.turn === game.dummy ? 'active' : ''}">N</div>
+            ${seatCardHTML(game.dummy)}
+          </div>
+          <div class="seat west">
+            <div class="seat-label ${game.turn === 'W' ? 'active' : ''}">W</div>
+            ${seatCardHTML('W')}
+          </div>
+          <div class="seat center">
+            <div class="center-info">
+              ${game.trump ? SUITS[game.trump] + ' trump' : 'No Trump'}<br>
+              Need: ${game.target}
+            </div>
+          </div>
+          <div class="seat east">
+            <div class="seat-label ${game.turn === 'E' ? 'active' : ''}">E</div>
+            ${seatCardHTML('E')}
+          </div>
+          <div class="seat south">
+            <div class="seat-label ${game.turn === 'S' ? 'active' : ''}">S</div>
+            ${seatCardHTML('S')}
+          </div>
+        </div>
+      </div>
+
+      <div class="score-bar">
+        <span class="score-us">You: ${game.tricksNS}</span>
+        <span class="score-contract">${game.contract}</span>
+        <span class="score-them">Them: ${game.tricksEW}</span>
+      </div>
+
+      <div class="player-section">
+        <div class="player-label">
+          Your Hand${isPlayerTurn ? ' — choose a card' : ''}
+        </div>
+        ${playerHTML}
+        ${game.selectedCard ? `
+          <div class="play-btn-container">
+            <button class="play-btn" onclick="confirmPlay()">PLAY</button>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+```
+
+- [ ] **Step 2: Test gameplay**
+
+Open the page, start a guided hand. You should see:
+- Dummy hand at top with colored borders on each card when it's dummy's turn
+- Table area with N/S/E/W slots
+- Player hand at bottom with colored borders when it's your turn
+- Star badge on the best card
+- Tap a card to select (lifts up), tap again or press PLAY to confirm
+- AI plays automatically, trick review slides up after each trick
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add bridge-play/index.html
+git commit -m "feat(bridge-play): add game screen rendering with card ratings display"
+```
+
+---
+
+### Task 7: Result Screen + Key Moments
+
+**Files:**
+- Modify: `bridge-play/index.html` (inside `<script>`, add after `renderGame()` and before `// INIT`)
+
+- [ ] **Step 1: Add the result screen**
+
+```javascript
+// ===========================
+// RESULT SCREEN
+// ===========================
+function showResult() {
+  const made = game.tricksNS >= game.target;
+  const diff = game.tricksNS - game.target;
+
+  // Calculate stats
+  const optimalCount = game.playerChoices.filter(p => p.rating === 'best').length;
+  const totalPlayerPlays = game.playerChoices.length;
+  const accuracy = totalPlayerPlays > 0 ? Math.round((optimalCount / totalPlayerPlays) * 100) : 100;
+
+  // XP calculation
+  let xp = 10; // base
+  if (made) xp += 10; // contract bonus
+  xp += optimalCount; // accuracy bonus (1 per optimal play)
+  if (game.mode === 'guided' && !state.completedGuided.includes(game.guidedIdx)) {
+    xp += 5; // first-time guided bonus
+  }
+
+  // Update state
+  state.xp += xp;
+  state.handsPlayed++;
+  if (made) state.contractsMade++;
+  state.totalOptimal += optimalCount;
+  state.totalPlays += totalPlayerPlays;
+
+  if (game.mode === 'guided' && game.guidedIdx !== null && made) {
+    if (!state.completedGuided.includes(game.guidedIdx)) {
+      state.completedGuided.push(game.guidedIdx);
+    }
+  }
+
+  if (state.handsPlayed >= 10) state.biddingUnlocked = true;
+
+  saveState();
+  updateXP();
+
+  // Key moments: find 2-3 notable tricks
+  const moments = [];
+  game.trickHistory.forEach((trick, i) => {
+    if (!trick.playerWasOptimal) {
+      const playerChoice = game.playerChoices.find(p => p.trickNum === i + 1);
+      moments.push({
+        trickNum: i + 1,
+        type: 'bad',
+        text: playerChoice ? playerChoice.reason : trick.review,
+      });
+    }
+  });
+  // Also highlight good plays if fewer than 2 bad ones
+  if (moments.length < 2) {
+    game.trickHistory.forEach((trick, i) => {
+      if (trick.playerWasOptimal && (trick.winner === 'N' || trick.winner === 'S') && moments.length < 3) {
+        moments.push({
+          trickNum: i + 1,
+          type: 'good',
+          text: trick.review,
+        });
+      }
+    });
+  }
+  // Limit to 3
+  const displayMoments = moments.slice(0, 3);
+
+  const icon = made ? '🏆' : '😔';
+  const title = made ? 'Contract Made!' : 'Contract Defeated';
+  const subtitle = made
+    ? (diff > 0 ? `Made with ${diff} overtrick${diff > 1 ? 's' : ''}!` : 'Exactly on target!')
+    : `Down ${Math.abs(diff)}. You needed ${game.target} tricks.`;
+
+  let momentsHTML = '';
+  if (displayMoments.length > 0) {
+    momentsHTML = `
+      <div class="key-moments">
+        <h3>Key Moments</h3>
+        ${displayMoments.map(m => `
+          <div class="moment-card ${m.type}" onclick="showReplay(${m.trickNum - 1})">
+            <div class="moment-trick">Trick ${m.trickNum}</div>
+            <div class="moment-text">${m.text}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  document.getElementById('resultScreen').innerHTML = `
+    <div class="result-container">
+      <div class="result-icon" style="animation: bounceIn 0.5s ease">${icon}</div>
+      <div class="result-title">${title}</div>
+      <div class="result-subtitle">${subtitle}</div>
+
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="val" style="color:var(--green)">${game.tricksNS}</div>
+          <div class="label">Your Tricks</div>
+        </div>
+        <div class="result-stat">
+          <div class="val" style="color:var(--red)">${game.tricksEW}</div>
+          <div class="label">Their Tricks</div>
+        </div>
+        <div class="result-stat">
+          <div class="val" style="color:var(--blue)">${accuracy}%</div>
+          <div class="label">Accuracy</div>
+        </div>
+        <div class="result-stat">
+          <div class="val" style="color:var(--gold)">+${xp}</div>
+          <div class="label">XP</div>
+        </div>
+      </div>
+
+      ${momentsHTML}
+
+      <button class="result-btn primary" onclick="showReplay(0)">REVIEW THIS HAND</button>
+      <button class="result-btn secondary" onclick="playAgain()">DEAL AGAIN</button>
+      <button class="result-btn secondary" onclick="exitGame()">BACK TO MENU</button>
+    </div>
+  `;
+
+  showScreen('result');
+}
+
+function playAgain() {
+  if (game.mode === 'guided' && game.guidedIdx !== null) {
+    startGuided(game.guidedIdx);
+  } else {
+    startFreePlay();
+  }
+}
+```
+
+- [ ] **Step 2: Test by playing through a full hand**
+
+Play through all 13 tricks of a guided hand. After the last trick review, you should see the result screen with:
+- Trophy/sad emoji, contract result, stats
+- Key moments (clickable, but replay not implemented yet)
+- "Review This Hand", "Deal Again", "Back to Menu" buttons
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add bridge-play/index.html
+git commit -m "feat(bridge-play): add result screen with key moments and XP tracking"
+```
+
+---
+
+### Task 8: Hand Replay System
+
+**Files:**
+- Modify: `bridge-play/index.html` (inside `<script>`, add after `playAgain()` and before `// INIT`)
+
+- [ ] **Step 1: Add the replay rendering**
+
+```javascript
+// ===========================
+// REPLAY SYSTEM
+// ===========================
+let replayTrick = 0;
+
+function showReplay(trickIdx) {
+  replayTrick = trickIdx;
+  renderReplay();
+  showScreen('replay');
+}
+
+function renderReplay() {
+  const trick = game.trickHistory[replayTrick];
+  if (!trick) return;
+
+  const wonByNS = trick.winner === 'N' || trick.winner === 'S';
+
+  // Trick strip
+  let stripHTML = '<div class="replay-trick-strip">';
+  game.trickHistory.forEach((t, i) => {
+    const w = t.winner === 'N' || t.winner === 'S';
+    stripHTML += `<div class="replay-trick-dot ${i === replayTrick ? 'active' : ''} ${w ? 'won' : 'lost'}" onclick="goToTrick(${i})">${i + 1}</div>`;
+  });
+  stripHTML += '</div>';
+
+  // Cards played
+  let cardsHTML = '<div class="replay-cards">';
+  // Show in play order
+  trick.cards.forEach(c => {
+    const col = SUIT_COLORS[c.suit];
+    const isWinner = c.seat === trick.winner;
+    cardsHTML += `
+      <div class="replay-card-slot">
+        <div class="seat-name">${SEAT_NAMES[c.seat]}</div>
+        <div class="played-card ${col} ${isWinner ? 'winner' : ''}">
+          <span class="card-rank">${c.rank}</span>
+          <span class="card-suit">${SUITS[c.suit]}</span>
+        </div>
+      </div>
+    `;
+  });
+  cardsHTML += '</div>';
+
+  // Player's choice info
+  const playerChoice = game.playerChoices.find(p => p.trickNum === replayTrick + 1);
+  let playerInfo = '';
+  if (playerChoice) {
+    const wasOptimal = playerChoice.rating === 'best';
+    playerInfo = `<div style="margin-top:8px;font-size:0.85rem;color:${wasOptimal ? 'var(--green)' : 'var(--red)'}">
+      ${wasOptimal ? '✓ You played optimally' : '✗ A better play was available'}
+    </div>`;
+  }
+
+  document.getElementById('replayScreen').innerHTML = `
+    <div class="replay-container">
+      <div class="replay-header">
+        <button class="back-btn" onclick="showScreen('result')">←</button>
+        <div class="replay-title">Hand Replay</div>
+        <div style="width:40px"></div>
+      </div>
+
+      ${stripHTML}
+
+      <div style="text-align:center">
+        <div style="font-size:1.1rem;font-weight:900;margin-bottom:4px">
+          Trick ${replayTrick + 1}
+          <span style="color:${wonByNS ? 'var(--green)' : 'var(--red)'}">
+            — ${wonByNS ? 'You win' : 'They win'}
+          </span>
+        </div>
+        <div style="font-size:0.8rem;color:var(--text-dim)">
+          Won by ${SEAT_NAMES[trick.winner]}
+        </div>
+      </div>
+
+      ${cardsHTML}
+      ${playerInfo}
+
+      <div class="replay-commentary">${trick.review}</div>
+
+      <div class="replay-nav">
+        <button class="replay-nav-btn" onclick="goToTrick(${replayTrick - 1})" ${replayTrick === 0 ? 'disabled' : ''}>← Prev</button>
+        <button class="replay-nav-btn" onclick="goToTrick(${replayTrick + 1})" ${replayTrick >= game.trickHistory.length - 1 ? 'disabled' : ''}>Next →</button>
+      </div>
+
+      ${replayTrick >= game.trickHistory.length - 1 ? `
+        <div style="margin-top:20px">
+          <button class="result-btn secondary" onclick="playAgain()">DEAL AGAIN</button>
+          <button class="result-btn secondary" onclick="exitGame()">BACK TO MENU</button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function goToTrick(idx) {
+  if (idx < 0 || idx >= game.trickHistory.length) return;
+  replayTrick = idx;
+  renderReplay();
+}
+```
+
+- [ ] **Step 2: Test the full flow end-to-end**
+
+1. Start a guided hand
+2. Play through all 13 tricks (observe card ratings, trick reviews)
+3. See the result screen
+4. Click "Review This Hand" — replay should show trick-by-trick with navigation
+5. Click key moments to jump to specific tricks
+6. Navigate back to menu — stats should be updated
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add bridge-play/index.html
+git commit -m "feat(bridge-play): add trick-by-trick hand replay system"
+```
+
+---
+
+### Task 9: Cross-Links and README
+
+**Files:**
+- Modify: `README.md`
+- Modify: `bridge-tutor/index.html` (add a link to bridge-play)
+
+- [ ] **Step 1: Update the README**
+
+Add Bridge Play Tutor to the games table in `README.md`:
+
+```markdown
+| [Bridge Tutor](bridge-tutor/) | Duolingo-style bridge lessons — learn the rules |
+| [Bridge Play](bridge-play/) | Gameplay tutor with hints — practice playing bridge |
+```
+
+- [ ] **Step 2: Add cross-link in bridge-tutor**
+
+In `bridge-tutor/index.html`, find the `renderSimMenu()` function. After the existing mode cards but before the closing backtick of the template literal, add a cross-link:
+
+```html
+<div style="text-align:center;margin-top:24px">
+  <a href="../bridge-play/" style="color:#1cb0f6;text-decoration:none;font-weight:700;font-size:0.95rem">Want guided gameplay with hints? Try Play Tutor →</a>
+</div>
+```
+
+- [ ] **Step 3: Verify links work**
+
+- Open `README.md` — both bridge links should be listed
+- Open `bridge-tutor/index.html`, go to the Play tab — cross-link should appear
+- Open `bridge-play/index.html`, menu — cross-link to bridge-tutor should appear at bottom
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add README.md bridge-tutor/index.html bridge-play/index.html
+git commit -m "feat: add cross-links between bridge tutors and update README"
+```
+
+---
+
+### Task 10: Final Polish and Manual Testing
+
+**Files:**
+- Modify: `bridge-play/index.html` (minor fixes as needed)
+
+- [ ] **Step 1: Test on mobile viewport**
+
+Open Chrome DevTools, set viewport to iPhone SE (375x667). Play through a full hand and verify:
+- Cards are large enough to tap (44px+ touch targets)
+- No horizontal overflow
+- Score bar, table area, and hands all fit on screen
+- Trick review panel slides up cleanly
+- Replay is navigable
+
+- [ ] **Step 2: Test free play mode**
+
+Start a free play game. Verify:
+- Random deal works
+- Random contract is assigned
+- All 13 tricks play through
+- Result screen shows correct stats
+- XP is saved to localStorage
+
+- [ ] **Step 3: Test persistence**
+
+1. Play a guided hand to completion
+2. Refresh the page
+3. Verify: XP persists, completed guided hand shows ✓, stats show on menu
+
+- [ ] **Step 4: Commit any fixes**
+
+```bash
+git add bridge-play/index.html
+git commit -m "fix(bridge-play): polish and bug fixes from manual testing"
+```
