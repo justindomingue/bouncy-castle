@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Bridge Play Tutor - Learn by Playing</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
 <style>
@@ -42,7 +42,10 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 /* ===== TOP BAR ===== */
@@ -53,6 +56,7 @@ body {
   background: var(--bg-light);
   border-bottom: 2px solid var(--bg-card);
   padding: 12px 16px;
+  padding-top: max(12px, env(safe-area-inset-top));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -158,9 +162,11 @@ body {
   border: 2px solid transparent;
 }
 
-.mode-card:hover {
-  transform: scale(1.02);
-  border-color: var(--green);
+@media (hover: hover) {
+  .mode-card:hover {
+    transform: scale(1.02);
+    border-color: var(--green);
+  }
 }
 
 .mode-card.locked {
@@ -229,9 +235,11 @@ body {
   border: 2px solid transparent;
 }
 
-.guided-card:hover {
-  transform: scale(1.01);
-  border-color: var(--green);
+@media (hover: hover) {
+  .guided-card:hover {
+    transform: scale(1.01);
+    border-color: var(--green);
+  }
 }
 
 .guided-card.completed {
@@ -286,6 +294,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 58px);
+  min-height: calc(100dvh - 58px);
 }
 
 .game-info-bar {
@@ -521,47 +530,10 @@ body {
   font-weight: bold;
 }
 
-.hand-card.selected {
-  transform: translateY(-10px);
-  border-color: var(--blue);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-}
-
-.hand-card:hover:not(.rate-illegal) {
-  transform: translateY(-6px);
-}
-
-/* Play button */
-.play-btn-container {
-  margin-top: 10px;
-}
-
-.play-btn {
-  padding: 12px 40px;
-  border-radius: 14px;
-  font-size: 1rem;
-  font-weight: 800;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  background: var(--green);
-  color: white;
-  box-shadow: 0 4px 0 var(--green-dark);
-  transition: all 0.15s;
-}
-
-.play-btn:active {
-  box-shadow: 0 2px 0 var(--green-dark);
-  transform: translateY(2px);
-}
-
-.play-btn:disabled {
-  background: var(--bg-card);
-  color: var(--gray-dark);
-  box-shadow: 0 4px 0 #2a3a44;
-  cursor: not-allowed;
+@media (hover: hover) {
+  .hand-card:hover:not(.rate-illegal) {
+    transform: translateY(-6px);
+  }
 }
 
 /* ===== TRICK REVIEW PANEL ===== */
@@ -585,6 +557,7 @@ body {
   background: var(--bg-light);
   border-radius: 20px 20px 0 0;
   padding: 24px 20px 32px;
+  padding-bottom: max(32px, calc(16px + env(safe-area-inset-bottom)));
   position: relative;
   z-index: 200;
   max-width: 500px;
@@ -879,20 +852,30 @@ body {
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 380px) {
+@media (max-width: 400px) {
   .hand-card { width: 44px; height: 62px; }
   .hand-card .card-rank { font-size: 0.85rem; }
   .hand-card .card-suit { font-size: 1rem; }
-  .dummy-hand .hand-card { width: 36px; height: 52px; }
+  .dummy-hand .hand-card { width: 38px; height: 54px; }
   .dummy-hand .hand-card .card-rank { font-size: 0.75rem; }
   .dummy-hand .hand-card .card-suit { font-size: 0.9rem; }
   .played-card { width: 40px; height: 56px; }
+  .table-area { padding: 12px; }
+  .table-grid { min-height: 140px; }
+  .score-bar { font-size: 0.8rem; padding: 6px 10px; }
+}
+
+@media (max-width: 340px) {
+  .hand-card { width: 38px; height: 54px; gap: 3px; }
+  .dummy-hand .hand-card { width: 32px; height: 46px; }
+  .played-card { width: 36px; height: 50px; }
 }
 
 /* Safe area for notched phones */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .player-section { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
-}
+.player-section { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.menu-container { padding-bottom: max(30px, env(safe-area-inset-bottom)); }
+.result-container { padding-bottom: max(40px, env(safe-area-inset-bottom)); }
+.replay-container { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
 </style>
 </head>
 <body>
@@ -1360,7 +1343,8 @@ const guidedHands = [
     title: "Cash Your Winners",
     desc: "Play your Aces and Kings to win tricks",
     contract: "1NT", trump: null, target: 7, declarer: 'S',
-    concept: "In No Trump, your Aces and Kings are guaranteed winners. Play them!",
+    goal: "Win 7 tricks in No Trump.",
+    strategy: "You have tons of Aces and Kings — they're guaranteed winners. Just play them! No need to be fancy.",
     hands: {
       S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'5',s:'H'},{r:'4',s:'H'},{r:'A',s:'D'},{r:'7',s:'D'},{r:'6',s:'D'},{r:'K',s:'C'},{r:'4',s:'C'},{r:'3',s:'C'}],
       N: [{r:'J',s:'S'},{r:'10',s:'S'},{r:'9',s:'S'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'A',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'},{r:'10',s:'C'}],
@@ -1372,7 +1356,8 @@ const guidedHands = [
     title: "Follow Suit",
     desc: "Practice the most important rule in bridge",
     contract: "2S", trump: 'S', target: 8, declarer: 'S',
-    concept: "You MUST play a card of the suit that was led, if you have one.",
+    goal: "Win 8 tricks with Spades as trump.",
+    strategy: "Remember: you MUST follow suit if you can. Draw their trumps first with your high spades, then cash your other winners.",
     hands: {
       S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'10',s:'S'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'A',s:'D'},{r:'K',s:'D'},{r:'5',s:'D'},{r:'4',s:'D'},{r:'3',s:'C'},{r:'2',s:'C'}],
       N: [{r:'9',s:'S'},{r:'8',s:'S'},{r:'7',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'}],
@@ -1384,7 +1369,8 @@ const guidedHands = [
     title: "Using Trump",
     desc: "Trump the opponents' winners when you're void",
     contract: "4H", trump: 'H', target: 10, declarer: 'S',
-    concept: "When you have no cards in the led suit, you can play a trump card to win the trick!",
+    goal: "Win 10 tricks with Hearts as trump.",
+    strategy: "You have 8 trumps between your hand and dummy! Draw their trumps with your high hearts, then enjoy all your side winners.",
     hands: {
       S: [{r:'A',s:'H'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'9',s:'H'},{r:'A',s:'S'},{r:'2',s:'S'},{r:'A',s:'D'},{r:'2',s:'D'},{r:'8',s:'C'},{r:'4',s:'C'},{r:'2',s:'C'}],
       N: [{r:'8',s:'H'},{r:'7',s:'H'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'}],
@@ -1396,7 +1382,8 @@ const guidedHands = [
     title: "Save Your High Cards",
     desc: "Don't waste a King when a 2 will do",
     contract: "1NT", trump: null, target: 7, declarer: 'S',
-    concept: "If a low card will win (or lose) the trick anyway, save your high cards for later.",
+    goal: "Win 7 tricks in No Trump.",
+    strategy: "When a low card will win or lose anyway, save your high cards for later. Don't play the King when the 2 will do the same job.",
     hands: {
       S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'2',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'3',s:'H'},{r:'2',s:'H'},{r:'A',s:'D'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'5',s:'C'},{r:'4',s:'C'}],
       N: [{r:'J',s:'S'},{r:'10',s:'S'},{r:'9',s:'S'},{r:'8',s:'S'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'}],
@@ -1408,7 +1395,8 @@ const guidedHands = [
     title: "Lead From Length",
     desc: "Establish your long suit in No Trump",
     contract: "3NT", trump: null, target: 9, declarer: 'S',
-    concept: "In NT, lead your longest suit repeatedly. Eventually your small cards become winners when opponents run out.",
+    goal: "Win 9 tricks in No Trump.",
+    strategy: "Lead your longest suit (spades) repeatedly. After opponents run out of spades, even your small ones become winners!",
     hands: {
       S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'10',s:'S'},{r:'A',s:'H'},{r:'3',s:'H'},{r:'A',s:'D'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'A',s:'C'},{r:'4',s:'C'},{r:'3',s:'C'}],
       N: [{r:'9',s:'S'},{r:'8',s:'S'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'J',s:'D'},{r:'10',s:'D'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'},{r:'10',s:'C'}],
@@ -1420,7 +1408,8 @@ const guidedHands = [
     title: "Second Hand Low",
     desc: "Play low when you're second to play",
     contract: "1NT", trump: null, target: 7, declarer: 'S',
-    concept: "When an opponent leads and you play second, usually play LOW. Save your high cards to capture theirs later.",
+    goal: "Win 7 tricks in No Trump.",
+    strategy: "When an opponent leads and you play second, usually play LOW. Save your Aces and Kings to capture their honors later.",
     hands: {
       S: [{r:'A',s:'S'},{r:'Q',s:'S'},{r:'5',s:'S'},{r:'4',s:'S'},{r:'A',s:'H'},{r:'Q',s:'H'},{r:'5',s:'H'},{r:'A',s:'D'},{r:'Q',s:'D'},{r:'5',s:'D'},{r:'A',s:'C'},{r:'Q',s:'C'},{r:'5',s:'C'}],
       N: [{r:'K',s:'S'},{r:'J',s:'S'},{r:'3',s:'S'},{r:'K',s:'H'},{r:'J',s:'H'},{r:'3',s:'H'},{r:'K',s:'D'},{r:'J',s:'D'},{r:'3',s:'D'},{r:'K',s:'C'},{r:'J',s:'C'},{r:'3',s:'C'},{r:'2',s:'C'}],
@@ -1432,7 +1421,8 @@ const guidedHands = [
     title: "Third Hand High",
     desc: "Play high when partner leads and you're third",
     contract: "1NT", trump: null, target: 7, declarer: 'S',
-    concept: "When your partner leads and you play third, play HIGH to try to win the trick for your side.",
+    goal: "Win 7 tricks in No Trump.",
+    strategy: "When your partner (dummy) leads and you play third, play HIGH to try to win the trick. Your partner led low — back them up!",
     hands: {
       S: [{r:'A',s:'S'},{r:'K',s:'S'},{r:'Q',s:'S'},{r:'5',s:'S'},{r:'4',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'Q',s:'H'},{r:'5',s:'D'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'5',s:'C'},{r:'4',s:'C'}],
       N: [{r:'J',s:'S'},{r:'10',s:'S'},{r:'9',s:'S'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'9',s:'H'},{r:'A',s:'D'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'A',s:'C'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'J',s:'C'}],
@@ -1444,7 +1434,8 @@ const guidedHands = [
     title: "The Simple Finesse",
     desc: "Try to trap the opponent's King",
     contract: "3NT", trump: null, target: 9, declarer: 'S',
-    concept: "With AQ in your hand, lead toward them from dummy. If the King is on your left, your Queen wins!",
+    goal: "Win 9 tricks in No Trump.",
+    strategy: "You have AQJ10 of spades but East has the King! Lead a small spade from dummy toward your AQ — if East plays low, try the Queen.",
     hands: {
       S: [{r:'A',s:'S'},{r:'Q',s:'S'},{r:'J',s:'S'},{r:'10',s:'S'},{r:'A',s:'H'},{r:'K',s:'H'},{r:'5',s:'H'},{r:'4',s:'D'},{r:'3',s:'D'},{r:'2',s:'D'},{r:'A',s:'C'},{r:'4',s:'C'},{r:'3',s:'C'}],
       N: [{r:'5',s:'S'},{r:'4',s:'S'},{r:'3',s:'S'},{r:'2',s:'S'},{r:'Q',s:'H'},{r:'J',s:'H'},{r:'10',s:'H'},{r:'A',s:'D'},{r:'K',s:'D'},{r:'Q',s:'D'},{r:'K',s:'C'},{r:'Q',s:'C'},{r:'2',s:'C'}],
@@ -1661,21 +1652,7 @@ function selectCard(seat, idx) {
   const card = game.hands[seat][idx];
   if (!canPlayCard(seat, card)) return;
 
-  if (game.selectedCard && game.selectedCard.seat === seat && game.selectedCard.idx === idx) {
-    // Double-tap to play
-    const ratings = analyzeCards(seat);
-    const rating = ratings.find(r => r.card.r === card.r && r.card.s === card.s);
-    executePlay(seat, card, rating);
-  } else {
-    game.selectedCard = { seat, idx };
-    renderGame();
-  }
-}
-
-function confirmPlay() {
-  if (!game.selectedCard) return;
-  const { seat, idx } = game.selectedCard;
-  const card = game.hands[seat][idx];
+  // Play immediately on tap
   const ratings = analyzeCards(seat);
   const rating = ratings.find(r => r.card.r === card.r && r.card.s === card.s);
   executePlay(seat, card, rating);
@@ -1807,8 +1784,7 @@ function renderGame() {
         if (r.rating === 'best') starBadge = '<div class="star-badge">★</div>';
       }
     }
-    const selected = game.selectedCard && game.selectedCard.seat === game.dummy && game.selectedCard.idx === i;
-    dummyHTML += `<div class="hand-card ${col} ${ratingClass} ${selected ? 'selected' : ''}" ${playable ? `onclick="selectCard('${game.dummy}',${i})"` : ''}>
+    dummyHTML += `<div class="hand-card ${col} ${ratingClass}" ${playable ? `onclick="selectCard('${game.dummy}',${i})"` : ''}>
       <span class="card-rank">${card.r}</span><span class="card-suit">${SUITS[card.s]}</span>${starBadge}</div>`;
   });
   dummyHTML += '</div>';
@@ -1828,19 +1804,38 @@ function renderGame() {
         if (r.rating === 'best') starBadge = '<div class="star-badge">★</div>';
       }
     }
-    const selected = game.selectedCard && game.selectedCard.seat === 'S' && game.selectedCard.idx === i;
-    playerHTML += `<div class="hand-card ${col} ${ratingClass} ${selected ? 'selected' : ''}" ${playable ? `onclick="selectCard('S',${i})"` : ''}>
+    playerHTML += `<div class="hand-card ${col} ${ratingClass}" ${playable ? `onclick="selectCard('S',${i})"` : ''}>
       <span class="card-rank">${card.r}</span><span class="card-suit">${SUITS[card.s]}</span>${starBadge}</div>`;
   });
   playerHTML += '</div>';
 
-  // Concept message for guided hands
+  // Goal + strategy message
   let conceptHTML = '';
-  if (game.mode === 'guided' && game.guidedIdx !== null && game.trickNum === 1 && game.currentTrick.length === 0) {
-    const h = guidedHands[game.guidedIdx];
-    conceptHTML = `<div style="background:var(--bg-card);border-radius:12px;padding:12px 16px;margin-bottom:8px;font-size:0.85rem;color:var(--text-dim);line-height:1.4">
-      <span style="color:var(--gold);font-weight:800">💡 ${h.title}:</span> ${h.concept}
-    </div>`;
+  if (game.trickNum === 1 && game.currentTrick.length === 0) {
+    if (game.mode === 'guided' && game.guidedIdx !== null) {
+      const h = guidedHands[game.guidedIdx];
+      conceptHTML = `<div style="background:var(--bg-card);border-radius:12px;padding:12px 16px;margin-bottom:8px;font-size:0.85rem;line-height:1.5">
+        <div style="color:var(--gold);font-weight:800;margin-bottom:4px">🎯 Goal: ${h.goal}</div>
+        <div style="color:var(--text-dim)">💡 ${h.strategy}</div>
+      </div>`;
+    } else {
+      // Free play — generate strategy based on hand
+      const trumpLabel = game.trump ? SUITS[game.trump] + ' trump' : 'No Trump';
+      const highCards = game.hands.S.filter(c => RANK_VAL[c.r] >= RANK_VAL['J']).length;
+      const dummyHighCards = game.hands[game.dummy].filter(c => RANK_VAL[c.r] >= RANK_VAL['J']).length;
+      let strategyMsg = '';
+      if (game.trump) {
+        const trumpCount = game.hands.S.filter(c => c.s === game.trump).length +
+                          game.hands[game.dummy].filter(c => c.s === game.trump).length;
+        strategyMsg = `You have ${trumpCount} trumps between your hands. Draw their trumps first, then cash your ${highCards + dummyHighCards} high cards.`;
+      } else {
+        strategyMsg = `You have ${highCards + dummyHighCards} high cards. Count your sure winners and cash them. Lead from your longest suit to establish extra tricks.`;
+      }
+      conceptHTML = `<div style="background:var(--bg-card);border-radius:12px;padding:12px 16px;margin-bottom:8px;font-size:0.85rem;line-height:1.5">
+        <div style="color:var(--gold);font-weight:800;margin-bottom:4px">🎯 Goal: Win ${game.target} tricks in ${trumpLabel}.</div>
+        <div style="color:var(--text-dim)">💡 ${strategyMsg}</div>
+      </div>`;
+    }
   }
 
   container.innerHTML = `
@@ -1898,11 +1893,6 @@ function renderGame() {
           Your Hand${isPlayerTurn ? ' — choose a card' : ''}
         </div>
         ${playerHTML}
-        ${game.selectedCard ? `
-          <div class="play-btn-container">
-            <button class="play-btn" onclick="confirmPlay()">PLAY</button>
-          </div>
-        ` : ''}
       </div>
     </div>
   `;
