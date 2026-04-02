@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bridge Play Tutor - Learn to Play Bridge</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+/* ===== CSS VARIABLES ===== */
+:root {
+  --green: #58cc02;
+  --green-dark: #46a302;
+  --green-light: #d7ffb8;
+  --blue: #1cb0f6;
+  --blue-dark: #1899d6;
+  --red: #ff4b4b;
+  --red-dark: #ea2b2b;
+  --orange: #ff9600;
+  --orange-dark: #cd7b00;
+  --purple: #ce82ff;
+  --purple-dark: #a855f7;
+  --gold: #ffc800;
+  --gold-dark: #e6b400;
+  --gray: #e5e5e5;
+  --gray-dark: #afafaf;
+  --gray-darker: #777;
+  --bg: #131f24;
+  --bg-light: #1a2b33;
+  --bg-card: #233340;
+  --text: #ffffff;
+  --text-dim: #93a8b4;
+  --heart: #ff4b4b;
+  --suit-red: #e05555;
+  --suit-black: #ffffff;
+
+  /* Card rating colors */
+  --rating-best: #58cc02;
+  --rating-good: #1cb0f6;
+  --rating-ok: #ff9600;
+  --rating-bad: #ff4b4b;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ===== TOP BAR ===== */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--bg-light);
+  border-bottom: 2px solid var(--bg-card);
+  padding: 10px 16px;
+  padding-top: max(10px, env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.top-bar-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.top-bar-xp {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--gold);
+}
+
+.top-bar-back {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+.top-bar-back:hover { color: var(--text); background: var(--bg-card); }
+
+/* ===== SCREENS ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ===== MENU SCREEN ===== */
+.menu-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
+}
+
+.menu-stats-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.menu-stat-card {
+  flex: 1;
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 14px 10px;
+  text-align: center;
+  border: 2px solid #2e4050;
+}
+
+.menu-stat-value {
+  font-size: 1.6rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.menu-stat-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.menu-section-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.menu-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 18px 16px;
+  margin-bottom: 14px;
+  border: 2px solid #2e4050;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: inherit;
+}
+.menu-card:hover { border-color: var(--green); transform: translateY(-1px); }
+.menu-card:active { transform: translateY(0); }
+
+.menu-card-icon {
+  font-size: 2rem;
+  width: 48px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.menu-card-body { flex: 1; min-width: 0; }
+
+.menu-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 3px;
+}
+
+.menu-card-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.menu-card-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge-green { background: var(--green); color: #000; }
+.badge-blue { background: var(--blue); color: #000; }
+.badge-orange { background: var(--orange); color: #000; }
+.badge-lock { background: var(--bg-light); color: var(--text-dim); border: 1px solid #3a5060; }
+
+.menu-card.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.menu-card.locked:hover { border-color: #2e4050; transform: none; }
+
+.menu-progress-bar {
+  height: 6px;
+  background: var(--bg-light);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.menu-progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.menu-cross-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-light);
+  border-radius: 12px;
+  border: 1px solid #2e4050;
+  text-decoration: none;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-top: 24px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.menu-cross-link:hover { color: var(--text); border-color: var(--purple); }
+
+/* ===== GUIDED LIST SCREEN ===== */
+.guided-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
+}
+
+.guided-header {
+  margin-bottom: 20px;
+}
+
+.guided-header h2 {
+  font-size: 1.3rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.guided-header p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.guided-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guided-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 14px;
+  border: 2px solid #2e4050;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.guided-item:hover { border-color: var(--blue); transform: translateY(-1px); }
+.guided-item:active { transform: translateY(0); }
+.guided-item.completed { border-color: var(--green-dark); }
+
+.guided-item-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.guided-item.completed .guided-item-num {
+  background: var(--green);
+  color: #000;
+}
+
+.guided-item-body { flex: 1; min-width: 0; }
+
+.guided-item-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.guided-item-concept {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.guided-item-stars {
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+/* ===== GAME SCREEN ===== */
+.game-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 0 env(safe-area-inset-bottom);
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 52px);
+  min-height: calc(100dvh - 52px);
+}
+
+/* Contract bar */
+.contract-bar {
+  background: var(--bg-light);
+  border-bottom: 1px solid var(--bg-card);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.contract-info { color: var(--text-dim); }
+.contract-info span { color: var(--text); }
+
+.trick-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.trick-pips {
+  display: flex;
+  gap: 3px;
+}
+
+.trick-pip {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid #3a5060;
+}
+.trick-pip.ns { background: var(--green); border-color: var(--green); }
+.trick-pip.ew { background: var(--red); border-color: var(--red); }
+
+/* Lesson tip banner */
+.lesson-tip {
+  background: #1a2e3a;
+  border-bottom: 1px solid var(--blue);
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  color: var(--blue);
+  font-weight: 700;
+  line-height: 1.35;
+  display: none;
+}
+.lesson-tip.visible { display: block; }
+
+/* Table area */
+.table-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 10px;
+  gap: 6px;
+  position: relative;
+}
+
+/* North hand (dummy) */
+.dummy-hand {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 6px 8px;
+  background: var(--bg-light);
+  border-radius: 12px;
+  border: 1px solid #2e4050;
+  max-width: 100%;
+}
+
+.dummy-suit-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.dummy-suit-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.dummy-card-mini {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 4px;
+  background: var(--bg-card);
+  border-radius: 4px;
+  border: 1px solid #3a5060;
+  cursor: default;
+  line-height: 1;
+}
+
+/* Seat labels */
+.seat-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 4px;
+}
+
+.seat-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-width: 40px;
+  text-align: center;
+}
+.seat-label.active { color: var(--gold); }
+.seat-label.you { color: var(--green); }
+
+/* Current trick display */
+.current-trick {
+  display: grid;
+  grid-template-columns: 60px 1fr 60px;
+  grid-template-rows: auto auto auto;
+  gap: 4px;
+  align-items: center;
+  justify-items: center;
+  width: 200px;
+}
+
+.trick-slot {
+  width: 52px;
+  height: 72px;
+  border-radius: 6px;
+  border: 2px dashed #2e4050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.trick-slot.north { grid-column: 2; grid-row: 1; }
+.trick-slot.west  { grid-column: 1; grid-row: 2; }
+.trick-slot.center-label { grid-column: 2; grid-row: 2; font-size: 0.65rem; color: var(--text-dim); font-weight: 700; }
+.trick-slot.east  { grid-column: 3; grid-row: 2; }
+.trick-slot.south { grid-column: 2; grid-row: 3; }
+
+.trick-slot.winning { border-color: var(--gold); border-style: solid; }
+
+/* Playing card in trick */
+.play-card {
+  width: 48px;
+  height: 68px;
+  border-radius: 6px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 900;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  position: relative;
+  user-select: none;
+}
+
+.play-card .card-rank {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.play-card .card-suit-sym {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.play-card.red { color: var(--suit-red); }
+.play-card.black { color: #1a1a2e; }
+
+/* Player hand (South) */
+.player-hand-area {
+  background: var(--bg-light);
+  border-top: 2px solid var(--bg-card);
+  padding: 10px 12px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+
+.player-hand-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.player-cards-row {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Hand card (clickable) */
+.hand-card {
+  width: 44px;
+  height: 64px;
+  border-radius: 7px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hand-card:hover { transform: translateY(-6px); }
+.hand-card:active { transform: translateY(-3px); }
+
+.hand-card .card-rank {
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  color: inherit;
+}
+
+.hand-card .card-suit-sym {
+  font-size: 1rem;
+  line-height: 1;
+  color: inherit;
+}
+
+.hand-card.red { color: var(--suit-red); }
+.hand-card.black { color: #1a1a2e; }
+
+.hand-card.not-playable {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.hand-card.not-playable:hover { transform: none; }
+
+/* Card rating overlays */
+.hand-card.rate-best  { border-color: var(--rating-best);  box-shadow: 0 0 10px rgba(88,204,2,0.5); }
+.hand-card.rate-good  { border-color: var(--rating-good);  box-shadow: 0 0 10px rgba(28,176,246,0.5); }
+.hand-card.rate-ok    { border-color: var(--rating-ok);    box-shadow: 0 0 10px rgba(255,150,0,0.5); }
+.hand-card.rate-bad   { border-color: var(--rating-bad);   box-shadow: 0 0 10px rgba(255,75,75,0.5); }
+
+.card-star-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 900;
+  z-index: 2;
+}
+.badge-best  { background: var(--rating-best);  color: #000; }
+.badge-good  { background: var(--rating-good);  color: #000; }
+.badge-ok    { background: var(--rating-ok);    color: #000; }
+.badge-bad   { background: var(--rating-bad);   color: #fff; }
+
+/* ===== TRICK REVIEW PANEL (slide-up) ===== */
+.review-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0,0,0,0.55);
+  align-items: flex-end;
+  justify-content: center;
+}
+.review-overlay.visible {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+
+.review-panel {
+  background: var(--bg-light);
+  border-radius: 20px 20px 0 0;
+  border-top: 2px solid var(--bg-card);
+  padding: 20px 18px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  width: 100%;
+  max-width: 480px;
+  animation: slideUp 0.28s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.review-panel-title {
+  font-size: 1rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-panel-explanation {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+
+.review-trick-cards {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.review-trick-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.review-trick-card-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.review-card-chip {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+.review-card-chip.red { color: var(--suit-red); }
+.review-card-chip.black { color: #1a1a2e; }
+.review-card-chip.winner { box-shadow: 0 0 8px var(--gold); border: 2px solid var(--gold); }
+
+.review-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.review-rating-row.best  { background: rgba(88,204,2,0.15);  color: var(--rating-best); }
+.review-rating-row.good  { background: rgba(28,176,246,0.15); color: var(--rating-good); }
+.review-rating-row.ok    { background: rgba(255,150,0,0.15);  color: var(--rating-ok); }
+.review-rating-row.bad   { background: rgba(255,75,75,0.15);  color: var(--rating-bad); }
+
+.review-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: var(--green);
+  color: #000;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.review-btn:hover { background: var(--green-dark); }
+.review-btn:active { transform: scale(0.98); }
+
+/* ===== RESULT SCREEN ===== */
+.result-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 30px 16px 40px;
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.result-emoji {
+  font-size: 4rem;
+  margin-bottom: 12px;
+  animation: bounceIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.result-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.result-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+
+.result-stats-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.result-stat {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 14px 18px;
+  text-align: center;
+  border: 2px solid #2e4050;
+  min-width: 90px;
+}
+
+.result-stat-value {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.result-stat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.key-moments {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.key-moments-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.key-moment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+}
+
+.key-moment-trick {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  min-width: 50px;
+  text-transform: uppercase;
+  padding-top: 1px;
+}
+
+.key-moment-text {
+  flex: 1;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+
+.key-moment-text strong { color: var(--text); }
+
+.result-xp-banner {
+  background: linear-gradient(135deg, #1a3a1a, #1e3d10);
+  border: 2px solid var(--green-dark);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.result-xp-icon { font-size: 2rem; }
+
+.result-xp-info { text-align: left; }
+
+.result-xp-earned {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--gold);
+}
+
+.result-xp-reason {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.result-btn-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.result-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.result-btn:active { transform: scale(0.98); }
+
+.result-btn.primary { background: var(--green); color: #000; }
+.result-btn.primary:hover { background: var(--green-dark); }
+
+.result-btn.secondary { background: var(--bg-card); color: var(--text); border: 2px solid #3a5060; }
+.result-btn.secondary:hover { border-color: var(--blue); }
+
+.result-btn.replay { background: var(--blue); color: #000; }
+.result-btn.replay:hover { background: var(--blue-dark); }
+
+/* ===== REPLAY SCREEN ===== */
+.replay-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
+}
+
+.replay-header {
+  margin-bottom: 16px;
+}
+
+.replay-header h2 {
+  font-size: 1.2rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.replay-header p {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.replay-trick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.replay-trick-item {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 2px solid #2e4050;
+}
+
+.replay-trick-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.replay-trick-num {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.replay-trick-winner {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.replay-trick-winner.ns { color: var(--green); }
+.replay-trick-winner.ew { color: var(--red); }
+
+.replay-trick-plays {
+  display: flex;
+  gap: 8px;
+}
+
+.replay-play-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+}
+
+.replay-play-seat {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.replay-play-card {
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: white;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.replay-play-card.red { color: var(--suit-red); }
+.replay-play-card.black { color: #1a1a2e; }
+.replay-play-card.winner { box-shadow: 0 0 6px var(--gold); border: 1.5px solid var(--gold); }
+
+.replay-play-rating {
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.replay-play-rating.best  { color: var(--rating-best); }
+.replay-play-rating.good  { color: var(--rating-good); }
+.replay-play-rating.ok    { color: var(--rating-ok); }
+.replay-play-rating.bad   { color: var(--rating-bad); }
+
+/* ===== ANIMATIONS ===== */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0%   { transform: scale(0.3); opacity: 0; }
+  50%  { transform: scale(1.1); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes cardPlay {
+  0%   { transform: scale(1.2) translateY(-4px); opacity: 0.6; }
+  100% { transform: scale(1)   translateY(0);    opacity: 1; }
+}
+
+.card-played { animation: cardPlay 0.18s ease-out; }
+
+/* ===== RESPONSIVE ===== */
+@media (min-width: 400px) {
+  .hand-card { width: 48px; height: 68px; }
+  .hand-card .card-rank { font-size: 0.82rem; }
+}
+
+@media (max-width: 340px) {
+  .hand-card { width: 38px; height: 56px; }
+  .player-cards-row { gap: 3px; }
+}
+
+@media (min-height: 700px) {
+  .table-area { padding: 16px 10px; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<div class="top-bar" id="topBar">
+  <button class="top-bar-back" id="topBarBack" onclick="handleBack()">&#8592; Back</button>
+  <div class="top-bar-title" onclick="showScreen('menu')">&#127183; Bridge Play</div>
+  <div class="top-bar-xp" id="topBarXP">
+    <span>&#9889;</span>
+    <span id="xpDisplay">0</span>
+  </div>
+</div>
+
+<!-- ===== SCREENS ===== -->
+
+<!-- Menu Screen -->
+<div class="screen active" id="menuScreen">
+  <div class="menu-container" id="menuContainer"></div>
+</div>
+
+<!-- Guided List Screen -->
+<div class="screen" id="guidedScreen">
+  <div class="guided-container" id="guidedContainer"></div>
+</div>
+
+<!-- Game Screen -->
+<div class="screen" id="gameScreen">
+  <div class="game-container" id="gameContainer">
+    <!-- Contract bar -->
+    <div class="contract-bar" id="contractBar">
+      <div class="contract-info" id="contractInfo">Contract: <span>--</span></div>
+      <div class="trick-count" id="trickCount"></div>
+    </div>
+    <!-- Lesson tip -->
+    <div class="lesson-tip" id="lessonTip"></div>
+    <!-- Table area -->
+    <div class="table-area" id="tableArea">
+      <!-- Dummy hand (North) -->
+      <div class="dummy-hand" id="dummyHand"></div>
+      <!-- Seat labels row -->
+      <div class="seat-labels" id="seatLabels">
+        <div class="seat-label" id="labelWest">W</div>
+        <div style="flex:1"></div>
+        <div class="seat-label" id="labelEast">E</div>
+      </div>
+      <!-- Current trick -->
+      <div class="current-trick" id="currentTrick">
+        <div class="trick-slot north" id="slotN"></div>
+        <div class="trick-slot west"  id="slotW"></div>
+        <div class="trick-slot center-label" id="slotCenter">Trick</div>
+        <div class="trick-slot east"  id="slotE"></div>
+        <div class="trick-slot south" id="slotS"></div>
+      </div>
+    </div>
+    <!-- Player hand -->
+    <div class="player-hand-area" id="playerHandArea">
+      <div class="player-hand-label">
+        <span>Your Hand (South)</span>
+        <span id="playerHandHint"></span>
+      </div>
+      <div class="player-cards-row" id="playerCards"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Result Screen -->
+<div class="screen" id="resultScreen">
+  <div class="result-container" id="resultContainer"></div>
+</div>
+
+<!-- Replay Screen -->
+<div class="screen" id="replayScreen">
+  <div class="replay-container" id="replayContainer"></div>
+</div>
+
+<!-- ===== REVIEW OVERLAY ===== -->
+<div class="review-overlay" id="reviewOverlay">
+  <div class="review-panel" id="reviewPanel">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =============================================================
+   1. CONSTANTS
+   ============================================================= */
+const SUITS = ['S', 'H', 'D', 'C'];
+const SUIT_SYMBOLS = { S: '♠', H: '♥', D: '♦', C: '♣' };
+const SUIT_COLORS  = { S: 'black', H: 'red', D: 'red', C: 'black' };
+const SUIT_NAMES   = { S: 'Spades', H: 'Hearts', D: 'Diamonds', C: 'Clubs' };
+const SEATS = ['N', 'E', 'S', 'W'];
+const SEAT_NAMES = { N: 'North', E: 'East', S: 'South', W: 'West' };
+const RANK_ORDER = ['2','3','4','5','6','7','8','9','T','J','Q','K','A'];
+const RANK_VAL   = Object.fromEntries(RANK_ORDER.map((r,i) => [r, i]));
+const RANK_DISPLAY = { T: '10', J: 'J', Q: 'Q', K: 'K', A: 'A' };
+
+/* =============================================================
+   2. STATE (persisted)
+   ============================================================= */
+const STORAGE_KEY = 'bridgePlayState';
+
+const state = {
+  xp: 0,
+  handsPlayed: 0,
+  contractsMade: 0,
+  totalOptimal: 0,  // sum of optimal play scores
+  totalPlays: 0,    // total play-decisions made
+  completedGuided: [], // indices of completed guided hands
+  biddingUnlocked: false,
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      Object.assign(state, parsed);
+    }
+    // Sync XP from bridge-tutor if higher
+    const tutorRaw = localStorage.getItem('bridgeTutorState');
+    if (tutorRaw) {
+      const tutor = JSON.parse(tutorRaw);
+      if (tutor.xp && tutor.xp > state.xp) {
+        state.xp = tutor.xp;
+      }
+    }
+  } catch (e) {
+    console.warn('loadState error', e);
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn('saveState error', e);
+  }
+}
+
+/* =============================================================
+   3. GAME STATE
+   ============================================================= */
+const game = {
+  mode: null,          // 'guided' | 'free'
+  guidedIdx: null,     // index into GUIDED_HANDS
+
+  // Hands: { N, E, S, W } each is array of card strings e.g. 'AH', 'KS'
+  hands: null,
+  originalHands: null,
+
+  trump: null,         // 'S'|'H'|'D'|'C'|'N' (N = notrump)
+  contract: null,      // e.g. '3N', '4S'
+  declarer: null,      // 'N'|'E'|'S'|'W'
+  dummy: null,         // partner of declarer
+
+  currentTrick: [],    // array of { seat, card } in play order
+  leader: null,        // seat leading current trick
+  turn: null,          // seat to play next
+  tricksNS: 0,
+  tricksEW: 0,
+  trickNum: 1,         // 1-13
+  target: 0,           // tricks declarer's side needs to make contract
+  phase: 'play',       // 'play' | 'review' | 'done'
+
+  selectedCard: null,
+
+  trickHistory: [],    // array of { plays:[{seat,card}], winner, explanation, playerRating }
+  playerRatings: [],   // rating per trick where player played: 'best'|'good'|'ok'|'bad'
+  playerChoices: [],   // { trickNum, card, rating, explanation } for key moments
+};
+
+/* =============================================================
+   4. CARD HELPERS
+   ============================================================= */
+
+/** Build HTML for a card chip (e.g. in trick/review areas) */
+function cardHTML(card, extraClass = '') {
+  const rank = card.slice(0, -1);
+  const suit = card.slice(-1);
+  const color = SUIT_COLORS[suit];
+  const sym   = SUIT_SYMBOLS[suit];
+  const disp  = RANK_DISPLAY[rank] || rank;
+  return `<div class="play-card ${color} ${extraClass}">
+    <div class="card-rank">${disp}</div>
+    <div class="card-suit-sym">${sym}</div>
+  </div>`;
+}
+
+/** Inline suit span (colored symbol) */
+function suitSpan(suit) {
+  return `<span style="color:${SUIT_COLORS[suit]==='red'?'var(--suit-red)':'var(--suit-black)'}">${SUIT_SYMBOLS[suit]}</span>`;
+}
+
+function nextSeat(seat) {
+  return SEATS[(SEATS.indexOf(seat) + 1) % 4];
+}
+
+function partnerOf(seat) {
+  return SEATS[(SEATS.indexOf(seat) + 2) % 4];
+}
+
+/** Is this seat controlled by the human (South or dummy when dummy plays) */
+function isPlayerControlled(seat) {
+  // South always controlled by player; in bridge play, dummy is played by declarer
+  // We simplify: player controls South (declarer side simplified)
+  return seat === 'S';
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function sortHand(hand) {
+  // Sort by suit order (S,H,D,C) then rank descending within suit
+  return [...hand].sort((a, b) => {
+    const sa = a.slice(-1), sb = b.slice(-1);
+    const ra = a.slice(0,-1), rb = b.slice(0,-1);
+    if (sa !== sb) return SUITS.indexOf(sa) - SUITS.indexOf(sb);
+    return RANK_VAL[rb] - RANK_VAL[ra];
+  });
+}
+
+function sortAllHands() {
+  SEATS.forEach(s => {
+    if (game.hands[s]) game.hands[s] = sortHand(game.hands[s]);
+  });
+}
+
+function suitOfLed() {
+  if (game.currentTrick.length === 0) return null;
+  return game.currentTrick[0].card.slice(-1);
+}
+
+/** Check if playing `card` from `seat` is legal */
+function canPlayCard(card, seat) {
+  const hand = game.hands[seat];
+  if (!hand || !hand.includes(card)) return false;
+
+  const led = suitOfLed();
+  if (!led) return true; // leading to trick — any card ok
+
+  const cardSuit = card.slice(-1);
+  const hasSuit = hand.some(c => c.slice(-1) === led);
+  if (hasSuit) return cardSuit === led; // must follow suit
+  return true; // can play anything
+}
+
+function getPlayableCards(seat) {
+  return (game.hands[seat] || []).filter(c => canPlayCard(c, seat));
+}
+
+/** Determine winner of completed trick */
+function trickWinner(plays) {
+  const trump = game.trump;
+  const ledSuit = plays[0].card.slice(-1);
+
+  let best = plays[0];
+  for (let i = 1; i < plays.length; i++) {
+    const p = plays[i];
+    const pSuit = p.card.slice(-1);
+    const bestSuit = best.card.slice(-1);
+
+    const pIsTrump   = trump !== 'N' && pSuit === trump;
+    const bestIsTrump = trump !== 'N' && bestSuit === trump;
+
+    if (pIsTrump && !bestIsTrump) {
+      best = p;
+    } else if (!pIsTrump && bestIsTrump) {
+      // best stays
+    } else if (pSuit === bestSuit) {
+      if (RANK_VAL[p.card.slice(0,-1)] > RANK_VAL[best.card.slice(0,-1)]) best = p;
+    }
+    // else p is off-suit non-trump — can't win
+  }
+  return best.seat;
+}
+
+/** Current best card in the trick so far */
+function trickCurrentBest() {
+  if (game.currentTrick.length === 0) return null;
+  return trickWinner(game.currentTrick);
+}
+
+/** Would playing `card` beat what's currently winning in the trick? */
+function wouldBeat(card, seat) {
+  if (game.currentTrick.length === 0) return true; // leading
+  const hypo = [...game.currentTrick, { seat, card }];
+  return trickWinner(hypo) === seat;
+}
+
+/* =============================================================
+   5. SCREEN MANAGEMENT
+   ============================================================= */
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(name + 'Screen');
+  if (el) el.classList.add('active');
+
+  const backBtn = document.getElementById('topBarBack');
+  if (name === 'menu') {
+    backBtn.style.display = 'none';
+  } else {
+    backBtn.style.display = 'flex';
+  }
+}
+
+function updateXP() {
+  document.getElementById('xpDisplay').textContent = state.xp;
+}
+
+function handleBack() {
+  // Determine which screen is active and go back
+  const active = document.querySelector('.screen.active');
+  if (!active) return;
+  const id = active.id;
+
+  if (id === 'guidedScreen') { showScreen('menu'); renderMenu(); }
+  else if (id === 'gameScreen') {
+    if (game.mode === 'guided') { showScreen('guided'); showGuidedList(); }
+    else { showScreen('menu'); renderMenu(); }
+  }
+  else if (id === 'resultScreen') {
+    if (game.mode === 'guided') { showScreen('guided'); showGuidedList(); }
+    else { showScreen('menu'); renderMenu(); }
+  }
+  else if (id === 'replayScreen') { showScreen('result'); /* result still rendered */ }
+  else { showScreen('menu'); renderMenu(); }
+}
+
+/* =============================================================
+   6. GUIDED HANDS DATA
+   ============================================================= */
+const GUIDED_HANDS = [
+  {
+    title: "Cash Your Winners",
+    concept: "Taking your tricks at the right time",
+    tip: "You have all the top cards in notrump. Cash your winners before giving up the lead!",
+    contract: "3N",
+    declarer: "S",
+    trump: "N",
+    target: 9,
+    hands: {
+      S: ["AS","KS","AH","KH","AD","KD","AC"],
+      N: ["QS","JS","QH","JH","QD","JD","QC"],
+      E: ["TS","9S","TH","9H","TD","9D","TC"],
+      W: ["8S","7S","8H","7H","8D","7D","8C"],
+    },
+    opening_lead: "8S",  // W leads
+    // Per-trick guidance: hint shown before player plays
+    hints: [
+      "Lead your top winners. Start with Ace of Spades.",
+      "Continue cashing spade winners.",
+      "Good! Now shift to hearts — cash the Ace.",
+      "Continue with King of Hearts.",
+      "Shift to diamonds — cash the Ace.",
+      "King of Diamonds next.",
+      "Ace of Clubs seals the contract!",
+      null, null, null, null, null, null,
+    ],
+    // Rating function string (evaluated) — kept simple with categories
+    // ratings[trickIdx] = { card: 'AS', rating:'best', note:'Top winner — take it!' }
+    // We'll use a ratings array per trick for South's plays
+    ratings: [
+      { best: ["AS","KS"], good: ["AH","KH","AD","KD","AC"], ok: [], bad: [] },
+      { best: ["KS"], good: ["AH","KH","AD","KD","AC"], ok: [], bad: [] },
+      { best: ["AH","KH"], good: ["AD","KD","AC"], ok: [], bad: [] },
+      { best: ["KH"], good: ["AD","KD","AC"], ok: [], bad: [] },
+      { best: ["AD","KD"], good: ["AC"], ok: [], bad: [] },
+      { best: ["KD"], good: ["AC"], ok: [], bad: [] },
+      { best: ["AC","QC"], good: [], ok: [], bad: [] },
+      null, null, null, null, null, null,
+    ],
+  },
+  {
+    title: "Follow Suit",
+    concept: "The fundamental rule of card play",
+    tip: "Always follow suit when you can! Play a card in the suit that was led.",
+    contract: "2H",
+    declarer: "S",
+    trump: "H",
+    target: 8,
+    hands: {
+      S: ["AS","KS","AH","KH","QH","AD","KD"],
+      N: ["QS","JS","JH","TH","QD","JD","AC"],
+      E: ["TS","9S","8H","7H","6H","TD","9D"],
+      W: ["8S","7S","5H","4H","3H","8D","7D"],
+    },
+    opening_lead: "8S",
+    hints: [
+      "West leads a spade. You must follow suit — play a spade.",
+      "You won! Lead to the next trick. Try your Ace of Hearts.",
+      "Continue with King of Hearts.",
+      "Draw their last trumps with Queen of Hearts.",
+      "Now cash your Ace of Spades.",
+      "King of Spades.",
+      "Ace of Diamonds to wrap up.",
+      null, null, null, null, null, null,
+    ],
+    ratings: [
+      { best: ["AS","KS"], good: ["QS","JS"], ok: [], bad: ["AH","KH","QH","AD","KD"] },
+      { best: ["AH"], good: ["KH","QH"], ok: [], bad: ["AS","KS","AD","KD"] },
+      { best: ["KH"], good: ["QH"], ok: [], bad: [] },
+      { best: ["QH"], good: [], ok: [], bad: [] },
+      { best: ["AS","KS"], good: [], ok: [], bad: [] },
+      { best: ["KS"], good: [], ok: [], bad: [] },
+      { best: ["AD","KD"], good: [], ok: [], bad: [] },
+      null, null, null, null, null, null,
+    ],
+  },
+  {
+    title: "Using Trump",
+    concept: "Ruffing to win extra tricks",
+    tip: "When you're void in a suit, ruff (trump) to win the trick instead of discarding.",
+    contract: "4S",
+    declarer: "S",
+    trump: "S",
+    target: 10,
+    hands: {
+      S: ["AS","KS","QS","JS","AH","KH","AD"],
+      N: ["TS","9S","QH","JH","TH","KD","QD"],
+      E: ["8S","7S","6H","5H","4H","TD","9D"],
+      W: ["6S","5S","3H","2H","AH","8D","7D"],
+    },
+    opening_lead: "AH",
+    hints: [
+      "West leads Ace of Hearts. Follow suit — you have hearts.",
+      "West leads another heart. You're still following suit.",
+      "West leads a 3rd heart! You're void — ruff (play a trump)!",
+      "Draw trumps — lead your Ace of Spades.",
+      "Continue with King of Spades.",
+      "Queen of Spades clears their trumps.",
+      "Now cash your Ace of Hearts.",
+      "Ace and King of Diamonds to finish.",
+      null, null, null, null, null,
+    ],
+    ratings: [
+      { best: ["AH","KH"], good: [], ok: [], bad: ["AS","KS","QS","JS","AD"] },
+      { best: ["KH"], good: ["AH"], ok: [], bad: ["AS","KS","QS","JS","AD"] },
+      { best: ["AS","KS","QS","JS"], good: [], ok: [], bad: ["AH","KH","AD"] },
+      { best: ["AS"], good: ["KS","QS","JS"], ok: [], bad: [] },
+      { best: ["KS"], good: ["QS","JS"], ok: [], bad: [] },
+      { best: ["QS","JS"], good: [], ok: [], bad: [] },
+      { best: ["AD"], good: [], ok: ["AH"], bad: [] },
+      { best: ["AD","KD"], good: [], ok: [], bad: [] },
+      null, null, null, null, null,
+    ],
+  },
+  {
+    title: "Save Your High Cards",
+    concept: "Don't waste honors on thin air",
+    tip: "Play low when partner or you are already winning. Save your high cards to capture theirs!",
+    contract: "2N",
+    declarer: "S",
+    trump: "N",
+    target: 8,
+    hands: {
+      S: ["AS","QS","AH","QH","AD","QD","AC"],
+      N: ["KS","JS","KH","JH","KD","JD","KC"],
+      E: ["TS","9S","TH","9H","TD","9D","TC"],
+      W: ["8S","7S","8H","7H","8D","7D","8C"],
+    },
+    opening_lead: "8S",
+    hints: [
+      "West leads 8S. Your dummy has KS. Play low from dummy — the Jack! Save the King.",
+      "Good! You won cheaply. Lead Ace of Spades.",
+      "Cash Queen of Spades.",
+      "Shift to hearts — Ace of Hearts.",
+      "Continue with Queen of Hearts.",
+      "Diamonds next — Ace of Diamonds.",
+      "Queen of Diamonds seals it.",
+      null, null, null, null, null, null,
+    ],
+    ratings: [
+      { best: ["AS","QS"], good: [], ok: [], bad: ["AH","QH","AD","QD","AC"] },
+      { best: ["AS"], good: ["QS"], ok: [], bad: [] },
+      { best: ["QS"], good: [], ok: [], bad: [] },
+      { best: ["AH","QH"], good: [], ok: [], bad: ["AS","QS","AD","QD","AC"] },
+      { best: ["QH"], good: [], ok: [], bad: [] },
+      { best: ["AD","QD"], good: [], ok: [], bad: [] },
+      { best: ["QD"], good: [], ok: [], bad: [] },
+      null, null, null, null, null, null,
+    ],
+  },
+  {
+    title: "Lead From Length",
+    concept: "Establishing your long suit",
+    tip: "Lead from your long suit to establish winners. Persistence pays off!",
+    contract: "1N",
+    declarer: "S",
+    trump: "N",
+    target: 7,
+    hands: {
+      S: ["AS","KS","QS","JS","TS","AH","KH"],
+      N: ["9S","8S","QH","JH","TH","AD","KD"],
+      E: ["7S","6S","9H","8H","7H","QD","JD"],
+      W: ["5S","4S","6H","5H","4H","TD","9D"],
+    },
+    opening_lead: "5S",
+    hints: [
+      "West leads a small spade. Win with the 9 in dummy — save your big ones.",
+      "Lead back your spades — they're your winners. Play the Ace.",
+      "King of Spades.",
+      "Queen of Spades — they can't stop you.",
+      "Jack of Spades.",
+      "Ten of Spades completes your run.",
+      "Ace of Hearts for good measure.",
+      null, null, null, null, null, null,
+    ],
+    ratings: [
+      { best: ["AS","KS","QS","JS","TS"], good: [], ok: ["AH","KH"], bad: [] },
+      { best: ["AS"], good: ["KS","QS","JS","TS"], ok: [], bad: ["AH","KH"] },
+      { best: ["KS"], good: ["QS","JS","TS"], ok: [], bad: [] },
+      { best: ["QS"], good: ["JS","TS"], ok: [], bad: [] },
+      { best: ["JS"], good: ["TS"], ok: [], bad: [] },
+      { best: ["TS"], good: [], ok: [], bad: [] },
+      { best: ["AH","KH"], good: [], ok: [], bad: [] },
+      null, null, null, null, null, null,
+    ],
+  },
+  {
+    title: "Second Hand Low",
+    concept: "Don't rush to play your high cards",
+    tip: "Second hand low: when an opponent leads and it's your turn second, play low — don't waste your high card yet.",
+    contract: "3N",
+    declarer: "S",
+    trump: "N",
+    target: 9,
+    hands: {
+      S: ["AS","KS","QS","AH","KH","AD","AC"],
+      N: ["JS","TH","QH","JH","KD","QD","JD"],
+      E: ["TS","9S","8S","9H","8H","TD","9D"],
+      W: ["8H","7H","6H","5H","4H","8D","7D"],
+    },
+    opening_lead: "8H",
+    hints: [
+      "West leads 8H. Second hand low — play a small heart, not the Ace or King.",
+      "East plays 9H. Your Ace wins! Now cash your Ace of Spades.",
+      "King of Spades.",
+      "Queen of Spades — great run.",
+      "Ace of Hearts — now the time to cash it.",
+      "King of Hearts continues.",
+      "Ace of Diamonds to wrap up.",
+      null, null, null, null, null, null,
+    ],
+    ratings: [
+      // South is second hand — play low (not AH or KH)
+      { best: [], good: [], ok: ["AS","KS","QS","AD","AC"], bad: ["AH","KH"] },
+      { best: ["AS"], good: ["KS","QS"], ok: [], bad: [] },
+      { best: ["KS"], good: ["QS"], ok: [], bad: [] },
+      { best: ["QS"], good: [], ok: [], bad: [] },
+      { best: ["AH"], good: ["KH"], ok: [], bad: [] },
+      { best: ["KH"], good: [], ok: [], bad: [] },
+      { best: ["AD","AC"], good: [], ok: [], bad: [] },
+      null, null, null, null, null, null,
+    ],
+  },
+  {
+    title: "Third Hand High",
+    concept: "Support partner's lead",
+    tip: "Third hand high: when partner leads and you're third to play, put up your highest card to help win the trick.",
+    contract: "2N",
+    declarer: "S",
+    trump: "N",
+    target: 8,
+    hands: {
+      S: ["AS","KS","QS","AH","KH","QH","AD"],
+      N: ["JS","TH","JH","QD","JD","TD","AC"],
+      E: ["TS","9S","9H","8H","7H","9D","8D"],
+      W: ["8S","7S","6H","5H","4H","7D","6D"],
+    },
+    opening_lead: "8S",
+    hints: [
+      "West leads 8S. Dummy plays low. You're third — play your highest spade (Queen)!",
+      "You won! Cash Ace of Spades.",
+      "King of Spades.",
+      "Shift to hearts — Ace of Hearts.",
+      "King of Hearts.",
+      "Queen of Hearts.",
+      "Ace of Diamonds to finish.",
+      null, null, null, null, null, null,
+    ],
+    ratings: [
+      { best: ["AS","KS","QS"], good: [], ok: [], bad: ["AH","KH","QH","AD"] },
+      { best: ["AS"], good: ["KS","QS"], ok: [], bad: [] },
+      { best: ["KS"], good: ["QS"], ok: [], bad: [] },
+      { best: ["AH"], good: ["KH","QH"], ok: [], bad: [] },
+      { best: ["KH"], good: ["QH"], ok: [], bad: [] },
+      { best: ["QH"], good: [], ok: [], bad: [] },
+      { best: ["AD"], good: [], ok: [], bad: [] },
+      null, null, null, null, null, null,
+    ],
+  },
+  {
+    title: "The Simple Finesse",
+    concept: "Winning a trick with a lower card",
+    tip: "A finesse uses a lower card to try to win when the higher card might be onside. Lead toward the tenace!",
+    contract: "3N",
+    declarer: "S",
+    trump: "N",
+    target: 9,
+    hands: {
+      S: ["AS","KS","QS","KH","QH","KD","QD"],
+      N: ["JS","TH","JH","QC","JC","TC","9C"],
+      E: ["TS","9S","AH","9H","AC","8C","7C"],
+      W: ["8S","7S","8H","7H","6H","8D","7D"],
+    },
+    opening_lead: "8S",
+    hints: [
+      "West leads 8S. Win with the Jack in dummy.",
+      "Lead toward your King of Hearts — this is a finesse! Play KH.",
+      "If East takes the Ace, you'll win the Queen later. Continue — lead QH.",
+      "Cash King of Spades.",
+      "Queen of Spades.",
+      "King of Diamonds.",
+      "Queen of Diamonds for the contract.",
+      null, null, null, null, null, null,
+    ],
+    ratings: [
+      { best: ["AS","KS","QS"], good: [], ok: [], bad: ["KH","QH","KD","QD"] },
+      { best: ["KH","QH"], good: [], ok: ["KD","QD"], bad: ["AS","KS","QS"] },
+      { best: ["QH","KH"], good: [], ok: [], bad: [] },
+      { best: ["KS"], good: ["QS"], ok: [], bad: [] },
+      { best: ["QS"], good: [], ok: [], bad: [] },
+      { best: ["KD"], good: ["QD"], ok: [], bad: [] },
+      { best: ["QD"], good: [], ok: [], bad: [] },
+      null, null, null, null, null, null,
+    ],
+  },
+];
+
+/* =============================================================
+   7. MENU RENDERING
+   ============================================================= */
+function renderMenu() {
+  showScreen('menu');
+  document.getElementById('topBarBack').style.display = 'none';
+
+  const completed = state.completedGuided.length;
+  const total = GUIDED_HANDS.length;
+  const pct = Math.round((completed / total) * 100);
+
+  const accuracy = state.totalPlays > 0
+    ? Math.round((state.totalOptimal / state.totalPlays) * 100)
+    : 0;
+
+  const html = `
+    <div class="menu-stats-row">
+      <div class="menu-stat-card">
+        <div class="menu-stat-value" style="color:var(--gold)">${state.xp}</div>
+        <div class="menu-stat-label">⚡ XP</div>
+      </div>
+      <div class="menu-stat-card">
+        <div class="menu-stat-value" style="color:var(--green)">${state.contractsMade}</div>
+        <div class="menu-stat-label">✓ Made</div>
+      </div>
+      <div class="menu-stat-card">
+        <div class="menu-stat-value" style="color:var(--blue)">${accuracy}%</div>
+        <div class="menu-stat-label">★ Accuracy</div>
+      </div>
+    </div>
+
+    <div class="menu-section-title">Learn</div>
+
+    <div class="menu-card" onclick="showGuidedList()">
+      <div class="menu-card-icon">📚</div>
+      <div class="menu-card-body">
+        <div class="menu-card-title">Guided Hands</div>
+        <div class="menu-card-desc">8 curated deals teaching key play concepts</div>
+        <div class="menu-progress-bar">
+          <div class="menu-progress-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+      <div class="menu-card-badge badge-green">${completed}/${total}</div>
+    </div>
+
+    <div class="menu-section-title" style="margin-top:8px">Play</div>
+
+    <div class="menu-card" onclick="startFreePlay()">
+      <div class="menu-card-icon">🎲</div>
+      <div class="menu-card-body">
+        <div class="menu-card-title">Free Play</div>
+        <div class="menu-card-desc">Random deal — play as South with ratings</div>
+      </div>
+      <div class="menu-card-badge badge-blue">Random</div>
+    </div>
+
+    <div class="menu-section-title" style="margin-top:8px">Coming Soon</div>
+
+    <div class="menu-card locked">
+      <div class="menu-card-icon">🗣️</div>
+      <div class="menu-card-body">
+        <div class="menu-card-title">Bidding Mode</div>
+        <div class="menu-card-desc">Learn to bid your hand before playing</div>
+      </div>
+      <div class="menu-card-badge badge-lock">🔒 Soon</div>
+    </div>
+
+    <a href="../bridge-tutor/index.html" class="menu-cross-link">
+      <span>🎓</span>
+      <span>Also try Bridge Tutor — learn the rules &amp; bidding</span>
+      <span style="margin-left:auto">→</span>
+    </a>
+  `;
+
+  document.getElementById('menuContainer').innerHTML = html;
+}
+
+/* =============================================================
+   8. GUIDED LIST RENDERING
+   ============================================================= */
+function showGuidedList() {
+  showScreen('guided');
+  document.getElementById('topBarBack').style.display = 'flex';
+
+  const items = GUIDED_HANDS.map((hand, i) => {
+    const done = state.completedGuided.includes(i);
+    const stars = done ? '⭐⭐⭐' : '○○○';
+    return `
+      <div class="guided-item ${done ? 'completed' : ''}" onclick="startGuidedHand(${i})">
+        <div class="guided-item-num">${done ? '✓' : i + 1}</div>
+        <div class="guided-item-body">
+          <div class="guided-item-title">${hand.title}</div>
+          <div class="guided-item-concept">${hand.concept}</div>
+        </div>
+        <div class="guided-item-stars">${done ? '⭐⭐⭐' : '○○○'}</div>
+      </div>
+    `;
+  }).join('');
+
+  const html = `
+    <div class="guided-header">
+      <h2>Guided Hands</h2>
+      <p>Play through 8 curated deals, each teaching a key card-play concept.</p>
+    </div>
+    <div class="guided-list">
+      ${items}
+    </div>
+  `;
+
+  document.getElementById('guidedContainer').innerHTML = html;
+}
+
+/* Stubs for functions that will be implemented in Tasks 4-8 */
+function startGuidedHand(idx) {
+  // Tasks 4-8 code will be added here
+  alert('Coming soon! Hand ' + (idx + 1) + ': ' + GUIDED_HANDS[idx].title);
+}
+
+function startFreePlay() {
+  // Tasks 4-8 code will be added here
+  alert('Free play coming soon!');
+}
+
+// Tasks 4-8 code will be added here
+
+/* =============================================================
+   INIT
+   ============================================================= */
+loadState();
+updateXP();
+renderMenu();
+</script>
+</body>
+</html>
