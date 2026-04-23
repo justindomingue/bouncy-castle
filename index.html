@@ -36,9 +36,11 @@
     td { padding: 6px 8px; border-bottom: 1px solid #222; }
     .nil-label { font-size: 0.7rem; color: #00b4d8; margin-left: 4px; }
     .winner { text-align: center; padding: 12px; background: #e94560; color: white; border-radius: 8px; font-size: 1.2rem; font-weight: bold; margin-bottom: 16px; }
+    .sound-toggle { position: fixed; top: 16px; right: 16px; background: #16213e; border: 1px solid #333; color: #e0e0e0; border-radius: 50%; width: 40px; height: 40px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; padding: 0; }
   </style>
 </head>
 <body>
+  <button class="sound-toggle" id="soundToggle" onclick="toggleSound()" title="Toggle sound">&#128266;</button>
   <h1>Spades Tracker</h1>
   <div id="winner"></div>
 
@@ -104,10 +106,69 @@
     let state = { scores: [0, 0], bags: [0, 0], rounds: [], nils: [false, false], blindNils: [false, false] };
     const WINNING_SCORE = 500;
 
+    let audioCtx = null;
+    let soundOn = (() => { try { return localStorage.getItem('spadesSound') !== 'off'; } catch (e) { return true; } })();
+
+    function getAudio() {
+      if (!audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) audioCtx = new Ctx();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playTone(freq, duration, { type = 'sine', gain = 0.15, delay = 0, slideTo = null } = {}) {
+      if (!soundOn) return;
+      const ctx = getAudio();
+      if (!ctx) return;
+      const start = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, start);
+      if (slideTo !== null) osc.frequency.exponentialRampToValueAtTime(slideTo, start + duration);
+      g.gain.setValueAtTime(0, start);
+      g.gain.linearRampToValueAtTime(gain, start + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      osc.connect(g).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + duration + 0.02);
+    }
+
+    function playSequence(notes, { type = 'triangle', gain = 0.18, noteDur = 0.12, gap = 0.02 } = {}) {
+      if (!soundOn) return;
+      notes.forEach((freq, i) => playTone(freq, noteDur, { type, gain, delay: i * (noteDur + gap) }));
+    }
+
+    const sounds = {
+      madeBid: () => playSequence([523.25, 659.25, 783.99], { type: 'triangle', noteDur: 0.1 }),
+      setBid: () => playSequence([329.63, 277.18, 220.00], { type: 'sawtooth', gain: 0.12, noteDur: 0.14 }),
+      nilSuccess: () => playSequence([523.25, 659.25, 783.99, 1046.50], { type: 'sine', gain: 0.16, noteDur: 0.09 }),
+      nilFail: () => playTone(196.00, 0.5, { type: 'sawtooth', gain: 0.18, slideTo: 82.41 }),
+      bagPenalty: () => { playTone(150, 0.25, { type: 'square', gain: 0.14 }); playTone(110, 0.35, { type: 'square', gain: 0.14, delay: 0.1 }); },
+      win: () => playSequence([523.25, 659.25, 783.99, 1046.50, 1318.51], { type: 'triangle', gain: 0.2, noteDur: 0.14 }),
+      undo: () => playTone(440, 0.15, { type: 'sine', gain: 0.12, slideTo: 220 }),
+      reset: () => playSequence([220, 330, 440], { type: 'sine', gain: 0.1, noteDur: 0.08 }),
+      click: () => playTone(660, 0.05, { type: 'square', gain: 0.08 })
+    };
+
+    function toggleSound() {
+      soundOn = !soundOn;
+      try { localStorage.setItem('spadesSound', soundOn ? 'on' : 'off'); } catch (e) {}
+      document.getElementById('soundToggle').innerHTML = soundOn ? '&#128266;' : '&#128263;';
+      if (soundOn) { getAudio(); sounds.click(); }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('soundToggle').innerHTML = soundOn ? '&#128266;' : '&#128263;';
+    });
+
     function toggleNil(team) {
       const i = team - 1;
       state.nils[i] = !state.nils[i];
       if (state.nils[i]) state.blindNils[i] = false;
+      sounds.click();
       updateNilDisplay();
     }
 
@@ -115,6 +176,7 @@
       const i = team - 1;
       state.blindNils[i] = !state.blindNils[i];
       if (state.blindNils[i]) state.nils[i] = false;
+      sounds.click();
       updateNilDisplay();
     }
 
@@ -160,11 +222,13 @@
 
       const round = { bids: [...bids], tricks: [...tricks], nils: [...nils], blindNils: [...blindNils], points: results.map(r => r.points), prevScores: [...state.scores], prevBags: [...state.bags] };
 
+      let bagPenaltyHit = false;
       for (let i = 0; i < 2; i++) {
         state.bags[i] += results[i].newBags;
         if (state.bags[i] >= 10) {
           state.scores[i] -= 100;
           state.bags[i] -= 10;
+          bagPenaltyHit = true;
         }
         state.scores[i] += results[i].points;
       }
@@ -179,6 +243,27 @@
       document.getElementById('tricks2').value = 0;
       updateNilDisplay();
       render();
+      playRoundSounds(round, results, bagPenaltyHit);
+    }
+
+    function playRoundSounds(round, results, bagPenaltyHit) {
+      if (!soundOn) return;
+      const gameWon = (state.scores[0] >= WINNING_SCORE && state.scores[0] > state.scores[1]) ||
+                      (state.scores[1] >= WINNING_SCORE && state.scores[1] > state.scores[0]);
+      const anyNilSuccess = [0, 1].some(i => (round.nils[i] || round.blindNils[i]) && results[i].points > 0);
+      const anyNilFail = [0, 1].some(i => (round.nils[i] || round.blindNils[i]) && results[i].points < 0);
+      const anySet = [0, 1].some(i => !round.nils[i] && !round.blindNils[i] && results[i].points < 0);
+      const anyMade = [0, 1].some(i => !round.nils[i] && !round.blindNils[i] && results[i].points > 0);
+
+      let delay = 0;
+      const schedule = (fn, d) => setTimeout(fn, d);
+
+      if (anyNilSuccess) { schedule(sounds.nilSuccess, delay); delay += 500; }
+      else if (anyMade) { schedule(sounds.madeBid, delay); delay += 400; }
+      if (anyNilFail) { schedule(sounds.nilFail, delay); delay += 550; }
+      else if (anySet) { schedule(sounds.setBid, delay); delay += 500; }
+      if (bagPenaltyHit) { schedule(sounds.bagPenalty, delay); delay += 500; }
+      if (gameWon) schedule(sounds.win, delay);
     }
 
     function undoRound() {
@@ -186,12 +271,14 @@
       const last = state.rounds.pop();
       state.scores = [...last.prevScores];
       state.bags = [...last.prevBags];
+      sounds.undo();
       render();
     }
 
     function resetGame() {
       if (state.rounds.length > 0 && !confirm('Start a new game?')) return;
       state = { scores: [0, 0], bags: [0, 0], rounds: [], nils: [false, false], blindNils: [false, false] };
+      sounds.reset();
       updateNilDisplay();
       render();
     }
